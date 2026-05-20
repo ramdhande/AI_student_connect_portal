@@ -1,0 +1,59 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sign Up | Student Connect Portal</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head><script>
+function togglePassword(fieldId) {
+    const field = document.getElementById(fieldId);
+    field.type = field.type === "password" ? "text" : "password";
+}
+</script>
+<body>
+
+<div class="auth-container">
+    <div class="auth-card">
+        <h2> Create Account</h2>
+
+        <form method="POST">
+    {% csrf_token %}
+        <input type="text" name="student_id" placeholder="Student ID / PRN" required>
+        <input type="email" name="email" placeholder="College Email ID" required>
+        <input type="text" name="username" placeholder="Choose a username" required>
+
+    <div style="position:relative;">
+        <input type="password" id="password1" name="password1" placeholder="Create a password" required>
+        <span style="position:absolute; right:12px; top:12px; cursor:pointer;">
+        <i class="fa-solid fa-eye"></i>
+    </span>
+    </div>
+
+    <div style="position:relative; margin-top:10px;">
+        <input type="password" id="password2" name="password2" placeholder="Confirm password" required>
+        <span style="position:absolute; right:12px; top:12px; cursor:pointer;">
+    <i class="fa-solid fa-eye"></i>
+        </span>
+    </div>
+
+    <small style="color:#555;">
+        Password must be at least 8 characters.
+    </small>
+
+    <button type="submit">Register</button>
+</form>
+{% if error %}
+<p style="color:red; text-align:center;">{{ error }}</p>
+{% endif %}
+
+
+
+        <p>
+            Already have an account?
+            <a href="/login/">Login</a>
+        </p>
+    </div>
+</div>
+
+</body>
+</html>

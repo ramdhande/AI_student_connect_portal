@@ -1,0 +1,19 @@
+python manage.py createsuperuser
+
+Username : R
+email : ram@gmail.com
+password : ram123
+
+
+Normal User:
+
+usernme: ram_dhande
+password: ram123
+email; ram12@gmail.com
+
+
+Normal user: done
+
+username: student_mama
+pass: pubglover12
+email: pawan2@gmail.com
