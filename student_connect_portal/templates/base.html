@@ -55,32 +55,55 @@
             <nav class="sidebar-nav">
                 <ul>
                     {% if user.role == 'admin' %}
+                        <!-- Admin Multi-Workspace Navigation -->
                         <li>
-                            <a href="/admin-dashboard/" class="nav-link {% if '/admin-dashboard/' in request.path %}active{% endif %}">
+                            <a href="#analytics" class="nav-link nav-tab active" onclick="switchTab('analytics')">
                                 <i class="fa-solid fa-chart-line"></i>
-                                <span>Admin Dashboard</span>
+                                <span>Analytics & Metrics</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#resolver" class="nav-link nav-tab" onclick="switchTab('resolver')">
+                                <i class="fa-solid fa-shield-halved"></i>
+                                <span>Grievances Resolution</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#publisher" class="nav-link nav-tab" onclick="switchTab('publisher')">
+                                <i class="fa-solid fa-bullhorn"></i>
+                                <span>Notice Publisher</span>
                             </a>
                         </li>
                     {% else %}
+                        <!-- Student Multi-Workspace Navigation -->
                         <li>
-                            <a href="/dashboard/" class="nav-link {% if '/dashboard/' in request.path %}active{% endif %}">
+                            <a href="#overview" class="nav-link nav-tab active" onclick="switchTab('overview')">
                                 <i class="fa-solid fa-table-columns"></i>
-                                <span>Dashboard</span>
-                            </a>
-                        </li>
-                    {% endif %}
-                    
-                    {% if user.role == 'student' %}
-                        <li>
-                            <a href="/dashboard/#submit-grievance" class="nav-link">
-                                <i class="fa-solid fa-paper-plane"></i>
-                                <span>File Grievance</span>
+                                <span>Dashboard Overview</span>
                             </a>
                         </li>
                         <li>
-                            <a href="/dashboard/#chatbot-section" class="nav-link">
+                            <a href="#notices" class="nav-link nav-tab" onclick="switchTab('notices')">
+                                <i class="fa-solid fa-bullhorn"></i>
+                                <span>Notices Board</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#grievances" class="nav-link nav-tab" onclick="switchTab('grievances')">
+                                <i class="fa-solid fa-clipboard-question"></i>
+                                <span>Grievance Desk</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#chatbot" class="nav-link nav-tab" onclick="switchTab('chatbot')">
                                 <i class="fa-solid fa-robot"></i>
-                                <span>AI Help Assistant</span>
+                                <span>AI Chatbot Desk</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#sandbox" class="nav-link nav-tab" onclick="switchTab('sandbox')">
+                                <i class="fa-solid fa-flask-vial"></i>
+                                <span>AI Diagnostics Hub</span>
                             </a>
                         </li>
                     {% endif %}
@@ -108,7 +131,7 @@
                     <button class="sidebar-toggle-btn" onclick="toggleSidebar()">
                         <i class="fa-solid fa-bars-staggered"></i>
                     </button>
-                    <h2 class="page-title">{% block page_title %}Dashboard{% endblock %}</h2>
+                    <h2 class="page-title" id="topbar-title">Workspace</h2>
                 </div>
                 
                 <div class="header-right">
@@ -167,7 +190,6 @@
         </div>
     </div>
     {% else %}
-        <!-- Unauthenticated pages (Login/Signup) will just render inside a simple wrapper -->
         {% block auth_content %}{% endblock %}
     {% endif %}
 
@@ -188,6 +210,74 @@
             const dropdown = document.getElementById('notificationDropdown');
             if (dropdown && dropdown.classList.contains('active')) {
                 dropdown.classList.remove('active');
+            }
+        });
+
+        // Tab Switching Engine (Workspace controller)
+        function switchTab(tabId) {
+            // Hide all tab sections
+            const sections = document.querySelectorAll('.tab-section');
+            sections.forEach(s => s.style.display = 'none');
+            
+            // Show target section
+            const activeSection = document.getElementById(`tab-${tabId}`);
+            if (activeSection) {
+                activeSection.style.display = 'block';
+                // Trigger fade-in
+                activeSection.style.opacity = '0';
+                setTimeout(() => {
+                    activeSection.style.transition = 'opacity 0.25s ease';
+                    activeSection.style.opacity = '1';
+                }, 10);
+            }
+            
+            // Highlight active sidebar navigation tab
+            const tabs = document.querySelectorAll('.nav-tab');
+            tabs.forEach(t => t.classList.remove('active'));
+            
+            const activeTab = document.querySelector(`.nav-tab[href="#${tabId}"]`);
+            if (activeTab) {
+                activeTab.classList.add('active');
+                
+                // Update header topbar title automatically
+                const titleText = activeTab.querySelector('span').innerText;
+                document.getElementById('topbar-title').innerText = titleText;
+            }
+            
+            // Push hash state to URL natively
+            if (history.pushState) {
+                history.pushState(null, null, `#${tabId}`);
+            } else {
+                location.hash = `#${tabId}`;
+            }
+
+            // Close sidebar on mobile after clicking
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar && sidebar.classList.contains('active')) {
+                sidebar.classList.remove('active');
+            }
+        }
+
+        // Read hash on load to open correct tab
+        window.addEventListener('DOMContentLoaded', () => {
+            let hash = location.hash.replace('#', '');
+            if (hash) {
+                switchTab(hash);
+            } else {
+                // Fallback default tabs
+                {% if user.role == 'admin' %}
+                    switchTab('analytics');
+                {% else %}
+                    switchTab('overview');
+                {% endif %}
+            }
+        });
+
+        // Handle browser Back/Forward hash changes
+        window.addEventListener('hashchange', () => {
+            let hash = location.hash.replace('#', '');
+            if (hash) {
+                switchTab(hash);
             }
         });
     </script>

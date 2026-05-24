@@ -1,181 +1,358 @@
 {% extends 'base.html' %}
-{% block title %}Student Dashboard | AI Student Connect Portal{% endblock %}
-{% block page_title %}Student Workspace{% endblock %}
+{% block title %}Student Workspace | AI Student Connect Portal{% endblock %}
 
 {% block content %}
-<div class="dashboard-grid">
-    <!-- Left Column: Notices & Grievance Form -->
-    <div class="dashboard-left-col">
-        <!-- Notices Board Section -->
-        <div class="glass-card" style="margin-bottom: 32px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3><i class="fa-solid fa-bullhorn" style="color: var(--accent-purple); margin-right: 10px;"></i>Announcements Board</h3>
-                <span style="font-size: 12px; color: var(--text-muted);">{{ notices.count }} announcements posted</span>
+<!-- ==========================================
+     TAB 1: DASHBOARD OVERVIEW
+     ========================================== -->
+<div class="tab-section" id="tab-overview">
+    <!-- Welcome Header Card -->
+    <div class="glass-card" style="background: linear-gradient(135deg, rgba(29, 78, 216, 0.05), rgba(15, 118, 110, 0.05)); border-color: rgba(29, 78, 216, 0.15); margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+            <div>
+                <h2 style="font-size: 24px; color: var(--accent-primary);"><i class="fa-solid fa-hand-wave" style="margin-right: 10px; color: var(--color-medium);"></i>Welcome back, {% if user.student_profile %}{{ user.student_profile.full_name }}{% else %}{{ user.username }}{% endif %}!</h2>
+                <p style="color: var(--text-secondary); font-size: 13.5px; margin-top: 6px; max-width: 650px;">
+                    This is your intelligent college workspace. Check exam notices, file formal complaints securely, receive live administrative responses, and consult our NLP chatbot in real-time.
+                </p>
             </div>
-            
-            <!-- Category Filter Bar -->
-            <div class="notices-filter-bar">
-                <button class="filter-chip active" onclick="filterNotices('All', this)">All</button>
-                <button class="filter-chip" onclick="filterNotices('Academic', this)">Academic</button>
-                <button class="filter-chip" onclick="filterNotices('Placement', this)">Placement</button>
-                <button class="filter-chip" onclick="filterNotices('Events', this)">Events</button>
-                <button class="filter-chip" onclick="filterNotices('Emergency', this)">Emergency</button>
-                <button class="filter-chip" onclick="filterNotices('Administrative', this)">Administrative</button>
-            </div>
-
-            <!-- Notices Listing -->
-            <div class="notices-container" id="noticesContainer">
-                {% for notice in notices %}
-                    <div class="notice-item-card {{ notice.category }}" data-category="{{ notice.category }}">
-                        <div class="notice-meta">
-                            <span class="notice-badge {{ notice.category }}">{{ notice.category }}</span>
-                            <span class="notice-time"><i class="fa-regular fa-clock" style="margin-right: 4px;"></i>{{ notice.created_at|date:"M d, Y" }}</span>
-                        </div>
-                        <h4 class="notice-title" id="title-{{ notice.id }}">{{ notice.title }}</h4>
-                        <p class="notice-body-text" id="content-{{ notice.id }}">{{ notice.content }}</p>
-                        
-                        <!-- AI Translation Widget -->
-                        <div class="notice-translation-trigger">
-                            <label for="lang-{{ notice.id }}" style="margin: 0; font-size: 11px;"><i class="fa-solid fa-language" style="color: var(--accent-blue); margin-right: 4px;"></i>Translate Announcement:</label>
-                            <select class="translation-select" id="lang-{{ notice.id }}" onchange="triggerTranslation('{{ notice.id }}', this.value)">
-                                <option value="original">Original (English)</option>
-                                <option value="hindi">Hindi (हिंदी)</option>
-                                <option value="marathi">Marathi (मराठी)</option>
-                                <option value="spanish">Spanish (Español)</option>
-                            </select>
-                            <span class="translation-loader" id="loader-{{ notice.id }}"><i class="fa-solid fa-circle-notch fa-spin"></i> Translating...</span>
-                        </div>
-                    </div>
-                {% empty %}
-                    <div class="empty-state">
-                        <i class="fa-solid fa-folder-open"></i>
-                        <p>No announcements or notices available at this time.</p>
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-
-        <!-- Submit Grievance Form -->
-        <div class="glass-card" id="submit-grievance" style="margin-bottom: 32px;">
-            <div style="margin-bottom: 20px;">
-                <h3><i class="fa-solid fa-circle-plus" style="color: var(--color-high); margin-right: 10px;"></i>File a New Grievance</h3>
-                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Submit your issues securely. Our AI analyzes description sentiment and context severity to auto-prioritize urgent cases.</p>
-            </div>
-
-            <form method="POST" action="/grievance/submit/">
-                {% csrf_token %}
-                <div class="form-group">
-                    <label for="subject"><i class="fa-solid fa-heading" style="margin-right: 6px;"></i>Subject / Brief Title</label>
-                    <input type="text" id="subject" name="subject" placeholder="What is the complaint regarding?" required>
-                </div>
-                <div class="form-group">
-                    <label for="description"><i class="fa-solid fa-align-left" style="margin-right: 6px;"></i>Detailed Description</label>
-                    <textarea id="description" name="description" rows="5" placeholder="Describe the problem in detail. Note: AI scanning looks for high priority keywords (e.g. harassment, fee payments, exam timelines) to flag severity." required></textarea>
-                </div>
-                <button type="submit" class="btn-primary"><i class="fa-solid fa-paper-plane" style="margin-right: 8px;"></i>Submit Secure Complaint</button>
-            </form>
-        </div>
-
-        <!-- Student Grievances Logs -->
-        <div class="glass-card">
-            <div style="margin-bottom: 20px;">
-                <h3><i class="fa-solid fa-list-check" style="color: var(--accent-cyan); margin-right: 10px;"></i>My Filed Grievances</h3>
-                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Track real-time resolution status and official admin comments.</p>
-            </div>
-
-            <div class="grievances-list">
-                {% for g in grievances %}
-                    <div class="grievance-row">
-                        <div class="grievance-header">
-                            <h4 style="font-size: 15px; font-weight: 600;">{{ g.subject }}</h4>
-                            <span class="badge-status {{ g.status }}">{{ g.get_status_display }}</span>
-                        </div>
-                        
-                        <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;">{{ g.description }}</p>
-                        
-                        <!-- AI analysis markers -->
-                        <div style="display: flex; gap: 10px; align-items: center; border-top: 1px solid var(--border-glass); padding-top: 10px; flex-wrap: wrap;">
-                            <span style="font-size: 11px; color: var(--text-muted);"><i class="fa-solid fa-robot" style="margin-right: 4px;"></i>AI Analytics:</span>
-                            <span class="badge-priority {{ g.priority }}">Priority: {{ g.priority|upper }}</span>
-                            <span style="font-size: 11px; color: var(--text-secondary); background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); padding: 2px 6px; border-radius: 4px;">
-                                Tone: {{ g.sentiment }}
-                            </span>
-                            <span style="font-size: 11px; color: var(--text-muted); margin-left: auto;">
-                                Submitted: {{ g.created_at|date:"M d, Y" }}
-                            </span>
-                        </div>
-
-                        {% if g.admin_message %}
-                            <div style="background: rgba(56, 189, 248, 0.04); border: 1px solid rgba(56, 189, 248, 0.15); padding: 12px; border-radius: 8px; margin-top: 6px;">
-                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 12px; font-weight: 600; color: var(--accent-blue);">
-                                    <i class="fa-solid fa-reply"></i>
-                                    <span>Official Administrative Reply:</span>
-                                </div>
-                                <p style="font-size: 12.5px; color: var(--text-primary); line-height: 1.5;">{{ g.admin_message }}</p>
-                            </div>
-                        {% endif %}
-                    </div>
-                {% empty %}
-                    <div class="empty-state" style="padding: 30px 0;">
-                        <i class="fa-solid fa-clipboard-check"></i>
-                        <p>No complaints submitted yet. Your history is empty.</p>
-                    </div>
-                {% endfor %}
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-primary" onclick="switchTab('grievances')"><i class="fa-solid fa-paper-plane" style="margin-right: 6px;"></i>File Grievance</button>
+                <button class="btn-primary" onclick="switchTab('chatbot')" style="background: #ffffff; border: 1px solid var(--border-color); color: var(--accent-primary);"><i class="fa-solid fa-robot" style="margin-right: 6px;"></i>Ask AI Bot</button>
             </div>
         </div>
     </div>
 
-    <!-- Right Column: AI Chatbot Assistant -->
-    <div class="dashboard-right-col" id="chatbot-section">
-        <div class="glass-card" style="position: sticky; top: 90px;">
-            <div style="margin-bottom: 16px;">
-                <h3 style="display: flex; align-items: center; gap: 8px;">
-                    <span class="brand-icon"><i class="fa-solid fa-robot"></i></span>
-                    <span>AI Portal Assistant</span>
-                </h3>
-                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Instant answers to notices, exams, policies, or translations.</p>
+    <!-- Overview Stats Metrics Cards -->
+    <section class="admin-stats-grid" style="margin-bottom: 24px;">
+        <div class="stat-card glass-card" onclick="switchTab('notices')" style="cursor: pointer;">
+            <div class="stat-icon"><i class="fa-solid fa-bullhorn"></i></div>
+            <div class="stat-info">
+                <h4>Recent Board Notices</h4>
+                <div class="stat-value">{{ notices.count }} Active</div>
             </div>
-
-            <!-- Pre-populated Quick Chips -->
-            <div class="chat-chips-row">
-                <span class="chat-chip" onclick="quickAsk('Timetable and Exams')">Exam Notices</span>
-                <span class="chat-chip" onclick="quickAsk('College Fees clear')">Fee Deadlines</span>
-                <span class="chat-chip" onclick="quickAsk('How to file a grievance')">Filing a Grievance</span>
-                <span class="chat-chip" onclick="quickAsk('translate hindi: Final Year Exams will commence from June 15.')">Hindi Translation</span>
+        </div>
+        <div class="stat-card glass-card" onclick="switchTab('grievances')" style="cursor: pointer;">
+            <div class="stat-icon" style="background: rgba(234, 88, 12, 0.08); color: var(--color-pending);"><i class="fa-solid fa-circle-question"></i></div>
+            <div class="stat-info">
+                <h4>My Complaints</h4>
+                <div class="stat-value">{{ grievances.count }} Filed</div>
             </div>
+        </div>
+        <div class="stat-card glass-card" onclick="switchTab('sandbox')" style="cursor: pointer;">
+            <div class="stat-icon" style="background: rgba(15, 118, 110, 0.08); color: var(--accent-teal);"><i class="fa-solid fa-shield-halved"></i></div>
+            <div class="stat-info">
+                <h4>Grievance Security</h4>
+                <div class="stat-value">AI Monitored</div>
+            </div>
+        </div>
+        <div class="stat-card glass-card" onclick="switchTab('chatbot')" style="cursor: pointer;">
+            <div class="stat-icon" style="background: rgba(109, 40, 217, 0.08); color: var(--accent-purple);"><i class="fa-solid fa-robot"></i></div>
+            <div class="stat-info">
+                <h4>AI Support Desk</h4>
+                <div class="stat-value">24/7 Available</div>
+            </div>
+        </div>
+    </section>
 
-            <!-- Chat Window -->
-            <div class="chat-container" id="chatContainer">
-                <div class="chat-bubble bot">
-                    Hello! I'm your Student Connect AI Assistant. Ask me anything about exam updates, administrative deadlines, or how to submit a complaint!
+    <!-- Split view of notifications logs and latest notices -->
+    <div class="admin-workspace-grid">
+        <!-- Notices Board Sneak Peek -->
+        <div class="workspace-left">
+            <div class="glass-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h3><i class="fa-solid fa-list-check" style="color: var(--accent-primary); margin-right: 8px;"></i>Important Announcements</h3>
+                    <a href="#notices" onclick="switchTab('notices')" style="font-size: 12px; color: var(--accent-primary); font-weight: 600; text-decoration: none;">View Board Board <i class="fa-solid fa-arrow-right"></i></a>
+                </div>
+                <div class="notices-container">
+                    {% for notice in notices|slice:":2" %}
+                        <div class="notice-item-card {{ notice.category }}">
+                            <div class="notice-meta">
+                                <span class="notice-badge {{ notice.category }}">{{ notice.category }}</span>
+                                <span class="notice-time">{{ notice.created_at|date:"M d, Y" }}</span>
+                            </div>
+                            <h4 class="notice-title">{{ notice.title }}</h4>
+                            <p class="notice-body-text">{{ notice.content|slice:":120" }}...</p>
+                        </div>
+                    {% empty %}
+                        <div class="empty-state">
+                            <i class="fa-solid fa-folder-open"></i>
+                            <p>No notices available.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Latest Updates logs / Notifications -->
+        <div class="workspace-right">
+            <div class="glass-card">
+                <h3><i class="fa-solid fa-bell" style="color: var(--color-pending); margin-right: 8px;"></i>Live Notifications</h3>
+                <p style="font-size: 11.5px; color: var(--text-secondary); margin-top: 4px; margin-bottom: 16px;">Real-time feed of status updates, board changes, and actions.</p>
+                
+                <div class="notifications-feed" style="max-height: 250px; overflow-y: auto;">
+                    {% for n in notifications %}
+                        <div style="display: flex; gap: 12px; padding: 10px; border-bottom: 1px solid var(--border-color); background: rgba(0,0,0,0.01); border-radius: 6px; margin-bottom: 8px;">
+                            <span style="font-size: 16px; color: var(--accent-primary);"><i class="fa-solid fa-circle-info"></i></span>
+                            <div>
+                                <p style="font-size: 12px; color: var(--text-primary); line-height: 1.4;">{{ n.message }}</p>
+                                <span style="font-size: 9.5px; color: var(--text-muted);">{{ n.created_at|timesince }} ago</span>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="empty-state" style="padding: 20px 0;">
+                            <i class="fa-regular fa-bell-slash"></i>
+                            <p>All caught up! No unread messages.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==========================================
+     TAB 2: NOTICES BOARD
+     ========================================== -->
+<div class="tab-section" id="tab-notices" style="display: none;">
+    <div class="glass-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div>
+                <h3><i class="fa-solid fa-bullhorn" style="color: var(--accent-purple); margin-right: 10px;"></i>Announcements Board</h3>
+                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Click category chips below to filter board notices. Notices are sorted by priority weight.</p>
+            </div>
+            <span style="font-size: 12px; color: var(--text-muted);">{{ notices.count }} Board Notices</span>
+        </div>
+        
+        <!-- Category Filter Bar -->
+        <div class="notices-filter-bar">
+            <button class="filter-chip active" onclick="filterNotices('All', this)">All Categories</button>
+            <button class="filter-chip" onclick="filterNotices('Academic', this)">Academic</button>
+            <button class="filter-chip" onclick="filterNotices('Placement', this)">Placement</button>
+            <button class="filter-chip" onclick="filterNotices('Events', this)">Events</button>
+            <button class="filter-chip" onclick="filterNotices('Emergency', this)">Emergency</button>
+            <button class="filter-chip" onclick="filterNotices('Administrative', this)">Administrative</button>
+        </div>
+
+        <!-- Notices Listing -->
+        <div class="notices-container" id="noticesContainer">
+            {% for notice in notices %}
+                <div class="notice-item-card {{ notice.category }}" data-category="{{ notice.category }}">
+                    <div class="notice-meta">
+                        <span class="notice-badge {{ notice.category }}">{{ notice.category }}</span>
+                        <span class="notice-time"><i class="fa-regular fa-clock" style="margin-right: 4px;"></i>{{ notice.created_at|date:"M d, Y" }}</span>
+                    </div>
+                    <h4 class="notice-title" id="title-{{ notice.id }}">{{ notice.title }}</h4>
+                    <p class="notice-body-text" id="content-{{ notice.id }}">{{ notice.content }}</p>
+                    
+                    <!-- AI Translation Widget -->
+                    <div class="notice-translation-trigger">
+                        <label for="lang-{{ notice.id }}" style="margin: 0; font-size: 11px; font-weight: 600;"><i class="fa-solid fa-language" style="color: var(--accent-primary); margin-right: 4px;"></i>Translate Announcement:</label>
+                        <select class="translation-select" id="lang-{{ notice.id }}" onchange="triggerTranslation('{{ notice.id }}', this.value)">
+                            <option value="original">Original (English)</option>
+                            <option value="hindi">Hindi (हिंदी)</option>
+                            <option value="marathi">Marathi (मराठी)</option>
+                            <option value="spanish">Spanish (Español)</option>
+                        </select>
+                        <span class="translation-loader" id="loader-{{ notice.id }}"><i class="fa-solid fa-circle-notch fa-spin"></i> Translating...</span>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="empty-state">
+                    <i class="fa-solid fa-folder-open"></i>
+                    <p>No announcements or notices available at this time.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- ==========================================
+     TAB 3: GRIEVANCES PORTAL
+     ========================================== -->
+<div class="tab-section" id="tab-grievances" style="display: none;">
+    <div class="dashboard-grid">
+        <!-- Left: Submit Grievance Form -->
+        <div class="dashboard-left-col">
+            <div class="glass-card" style="margin-bottom: 24px;">
+                <div style="margin-bottom: 20px;">
+                    <h3><i class="fa-solid fa-circle-plus" style="color: var(--color-high); margin-right: 10px;"></i>File a New Grievance</h3>
+                    <p style="font-size: 12.5px; color: var(--text-secondary); margin-top: 4px;">Provide full details below. The built-in AI module scans text for severity and maps priority level automatically.</p>
+                </div>
+
+                <form method="POST" action="/grievance/submit/">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="subject"><i class="fa-solid fa-heading" style="margin-right: 6px;"></i>Subject / Brief Title</label>
+                        <input type="text" id="subject" name="subject" placeholder="What is the grievance regarding?" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="description"><i class="fa-solid fa-align-left" style="margin-right: 6px;"></i>Detailed Description</label>
+                        <textarea id="description" name="description" rows="6" placeholder="Describe the issue. Note: Typing terms like 'harassment', 'fees blocked', 'medical emergency' triggers high severity prioritization automatically." required></textarea>
+                    </div>
+                    <button type="submit" class="btn-primary"><i class="fa-solid fa-paper-plane" style="margin-right: 8px;"></i>Submit Secure Grievance</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Right: My Grievances History Logs -->
+        <div class="dashboard-right-col" style="grid-column: span 1;">
+            <div class="glass-card" style="max-height: 520px; overflow-y: auto;">
+                <div style="margin-bottom: 16px;">
+                    <h3><i class="fa-solid fa-list-check" style="color: var(--accent-teal); margin-right: 10px;"></i>Grievances Desk</h3>
+                    <p style="font-size: 11.5px; color: var(--text-secondary); margin-top: 2px;">Review current resolution status and official admin comment blocks.</p>
+                </div>
+
+                <div class="grievances-list">
+                    {% for g in grievances %}
+                        <div class="grievance-row" style="padding: 12px; margin-bottom: 10px; background: #f8fafc;">
+                            <div class="grievance-header">
+                                <h4 style="font-size: 13.5px; font-weight: 700; width: 65%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ g.subject }}</h4>
+                                <span class="badge-status {{ g.status }}" style="font-size: 9px; padding: 2px 6px;">{{ g.get_status_display }}</span>
+                            </div>
+                            
+                            <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.4; margin-top: 4px;">{{ g.description }}</p>
+                            
+                            <div style="display: flex; gap: 6px; align-items: center; border-top: 1px solid var(--border-color); padding-top: 8px; margin-top: 6px; flex-wrap: wrap;">
+                                <span class="badge-priority {{ g.priority }}" style="font-size: 8px;">{{ g.priority|upper }}</span>
+                                <span style="font-size: 9px; color: var(--text-muted); background: #ffffff; border: 1px solid var(--border-color); padding: 1px 4px; border-radius: 3px;">
+                                    Tone: {{ g.sentiment }}
+                                </span>
+                            </div>
+
+                            {% if g.admin_message %}
+                                <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 8px; border-radius: 6px; margin-top: 6px;">
+                                    <div style="font-size: 11px; font-weight: 700; color: var(--color-low); display: flex; align-items: center; gap: 4px; margin-bottom: 2px;">
+                                        <i class="fa-solid fa-reply"></i> Admin Reply:
+                                    </div>
+                                    <p style="font-size: 11.5px; color: var(--text-primary); line-height: 1.3;">{{ g.admin_message }}</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% empty %}
+                        <div class="empty-state" style="padding: 20px 0;">
+                            <i class="fa-solid fa-clipboard-check"></i>
+                            <p>No complaints filed yet.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==========================================
+     TAB 4: AI CHATBOT SUPPORT
+     ========================================== -->
+<div class="tab-section" id="tab-chatbot" style="display: none;">
+    <div class="glass-card" style="max-width: 800px; margin: 0 auto;">
+        <div style="margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; display: flex; align-items: center; gap: 12px;">
+            <div class="stat-icon" style="background: rgba(29, 78, 216, 0.08); color: var(--accent-primary); width: 40px; height: 40px; font-size: 16px;"><i class="fa-solid fa-robot"></i></div>
+            <div>
+                <h3>AI Help Desk Assistant</h3>
+                <p style="font-size: 12.5px; color: var(--text-secondary); margin-top: 2px;">Consult our automated assistant to locate exam timetables, fee due schedules, or general guidelines.</p>
+            </div>
+        </div>
+
+        <!-- Interactive Quick Question Chips -->
+        <div class="chat-chips-row" style="margin-bottom: 16px;">
+            <span class="chat-chip" onclick="quickAsk('Timetable and Exams')"><i class="fa-solid fa-circle-question"></i> Exam Notices</span>
+            <span class="chat-chip" onclick="quickAsk('College Fees clear')"><i class="fa-solid fa-circle-question"></i> Fee Deadlines</span>
+            <span class="chat-chip" onclick="quickAsk('How to file a grievance')"><i class="fa-solid fa-circle-question"></i> Filing a Complaint</span>
+            <span class="chat-chip" onclick="quickAsk('translate hindi: Final Year Exams will commence from June 15.')"><i class="fa-solid fa-circle-question"></i> Hindi translation sample</span>
+        </div>
+
+        <!-- Chat Container -->
+        <div class="chat-container" id="chatContainer" style="height: 380px;">
+            <div class="chat-bubble bot">
+                Hello! I am your AI Student Connect assistant. Ask me anything about examination boards, administrative fees, filing dynamic complaints, or use my translations! (e.g. *translate spanish: All students must complete their fee clearance.*)
+            </div>
+        </div>
+
+        <!-- Input Box -->
+        <div class="chat-input-wrapper">
+            <input type="text" id="chatInput" placeholder="Write a message to the AI Assistant..." onkeydown="checkEnterKey(event)">
+            <button onclick="sendChatMessage()" class="btn-primary" style="padding: 10px 18px;"><i class="fa-solid fa-paper-plane" style="margin-right: 6px;"></i>Send Message</button>
+        </div>
+    </div>
+</div>
+
+<!-- ==========================================
+     TAB 5: AI DIAGNOSTICS SANDBOX
+     ========================================== -->
+<div class="tab-section" id="tab-sandbox" style="display: none;">
+    <div class="glass-card" style="max-width: 900px; margin: 0 auto;">
+        <div style="margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; display: flex; align-items: center; gap: 12px;">
+            <div class="stat-icon" style="background: rgba(15, 118, 110, 0.08); color: var(--accent-teal); width: 40px; height: 40px; font-size: 16px;"><i class="fa-solid fa-flask"></i></div>
+            <div>
+                <h3>NLP Diagnostics Sandbox</h3>
+                <p style="font-size: 12.5px; color: var(--text-secondary); margin-top: 2px;">Interactive diagnostic tool explaining the NLP heuristics, severity keyword weights, and sentiment polarity rules running in your final year project.</p>
+            </div>
+        </div>
+
+        <div class="admin-workspace-grid" style="grid-template-columns: 1fr 1fr;">
+            <!-- Sandbox Input Column -->
+            <div>
+                <h4 style="font-size: 14px; margin-bottom: 10px; color: var(--accent-primary);"><i class="fa-solid fa-keyboard" style="margin-right: 6px;"></i>Write Diagnostic Draft</h4>
+                <div class="form-group">
+                    <label for="sandboxInput">Draft Complaint Text</label>
+                    <textarea id="sandboxInput" rows="5" placeholder="Type or paste a sample complaint description to run diagnostics..." oninput="runSandboxScan()"></textarea>
+                </div>
+                
+                <div style="background: #f8fafc; border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; margin-top: 14px;">
+                    <h5 style="font-size: 11px; font-weight: 700; margin-bottom: 6px; color: var(--text-primary);">💡 Scanning Tips (Gravity Triggers):</h5>
+                    <ul style="font-size: 11px; color: var(--text-secondary); padding-left: 14px; line-height: 1.4;">
+                        <li>Use words like **harassment, emergency, medical, leak** to observe a high-priority severity flag.</li>
+                        <li>Use words like **fees, exam schedule, timetable, portal** to observe medium-priority flags.</li>
+                        <li>Use highly positive words to see sentiment shift.</li>
+                    </ul>
                 </div>
             </div>
 
-            <!-- Chat Input Wrapper -->
-            <div class="chat-input-wrapper">
-                <input type="text" id="chatInput" placeholder="Type your message here..." onkeydown="checkEnterKey(event)">
-                <button onclick="sendChatMessage()" class="btn-primary" style="padding: 10px 14px;"><i class="fa-solid fa-paper-plane"></i></button>
+            <!-- Sandbox Results Column -->
+            <div class="glass-card" style="box-shadow: none; border-color: var(--border-color); background: #f8fafc; display: flex; flex-direction: column; justify-content: center; gap: 16px; min-height: 250px;">
+                <h4 style="font-size: 14px; margin-bottom: 4px; color: var(--text-primary); text-align: center;"><i class="fa-solid fa-gauge" style="margin-right: 6px; color: var(--accent-teal);"></i>AI Telemetry Output</h4>
+                
+                <!-- Sentiment Bar -->
+                <div>
+                    <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; margin-bottom: 4px;">
+                        <span>Sentiment Polarity Score:</span>
+                        <span id="sandboxPolarityText">0.0 (Neutral)</span>
+                    </div>
+                    <div style="height: 12px; background: var(--border-color); border-radius: 6px; overflow: hidden; position: relative;">
+                        <div id="sandboxPolarityBar" style="height: 100%; width: 50%; background: var(--color-medium); transition: all 0.25s ease; border-radius: 6px;"></div>
+                    </div>
+                </div>
+
+                <!-- Priority Badge -->
+                <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); padding: 12px 0;">
+                    <span style="font-size: 12px; font-weight: 600;">Heuristic Severity Level:</span>
+                    <span class="badge-priority low" id="sandboxPriorityBadge" style="font-size: 11px; padding: 4px 10px;">LOW</span>
+                </div>
+
+                <!-- Trigger Diagnostics -->
+                <div>
+                    <span style="font-size: 11.5px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;"><i class="fa-solid fa-magnifying-glass-chart" style="margin-right: 4px;"></i>Scan Diagnosis:</span>
+                    <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.4; font-style: italic;" id="sandboxDiagnosisText">Type some text on the left to activate diagnostic scan...</p>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    // Filtering Notices Board on client side
+    // 1. Filtering Notices Board on client side
     function filterNotices(category, btnEl) {
-        // Toggle Active Button Styling
         const buttons = document.querySelectorAll('.filter-chip');
         buttons.forEach(btn => btn.classList.remove('active'));
         btnEl.classList.add('active');
 
-        // Toggle Visibility with Animation
         const cards = document.querySelectorAll('.notice-item-card');
         cards.forEach(card => {
             if (category === 'All' || card.getAttribute('data-category') === category) {
                 card.style.display = 'block';
                 card.style.opacity = '0';
                 setTimeout(() => {
-                    card.style.transition = 'opacity 0.25s ease';
+                    card.style.transition = 'opacity 0.2s ease';
                     card.style.opacity = '1';
                 }, 10);
             } else {
@@ -184,7 +361,7 @@
         });
     }
 
-    // Dynamic AI Translation fetch
+    // 2. Dynamic AI Translation fetch
     const originalTexts = {};
 
     function triggerTranslation(noticeId, lang) {
@@ -192,7 +369,6 @@
         const contentEl = document.getElementById(`content-${noticeId}`);
         const loaderEl = document.getElementById(`loader-${noticeId}`);
 
-        // Store original text if not already stored
         if (!originalTexts[noticeId]) {
             originalTexts[noticeId] = {
                 title: titleEl.innerText,
@@ -206,21 +382,19 @@
             return;
         }
 
-        // Run fetch
         loaderEl.style.display = 'inline-block';
         fetch(`/notices/translate/?notice_id=${noticeId}&lang=${lang}`)
             .then(res => res.json())
             .then(data => {
                 loaderEl.style.display = 'none';
                 
-                // Set and animate
                 titleEl.style.opacity = '0';
                 contentEl.style.opacity = '0';
                 setTimeout(() => {
                     titleEl.innerText = data.translated_title;
                     contentEl.innerText = data.translated_content;
-                    titleEl.style.transition = 'opacity 0.3s ease';
-                    contentEl.style.transition = 'opacity 0.3s ease';
+                    titleEl.style.transition = 'opacity 0.25s ease';
+                    contentEl.style.transition = 'opacity 0.25s ease';
                     titleEl.style.opacity = '1';
                     contentEl.style.opacity = '1';
                 }, 150);
@@ -231,7 +405,7 @@
             });
     }
 
-    // AI Chatbot Functionality
+    // 3. AI Chatbot Functionality
     function checkEnterKey(e) {
         if (e.key === 'Enter') {
             sendChatMessage();
@@ -250,31 +424,23 @@
 
         const chatContainer = document.getElementById('chatContainer');
 
-        // Render User Chat Bubble
         chatContainer.innerHTML += `<div class="chat-bubble user">${message}</div>`;
         input.value = '';
         chatContainer.scrollTop = chatContainer.scrollHeight;
 
-        // Generate dynamic unique typing ID
         const typingId = 'typing-' + Date.now();
         chatContainer.innerHTML += `<div class="chat-bubble bot" id="${typingId}"><i>Typing...</i></div>`;
         chatContainer.scrollTop = chatContainer.scrollHeight;
 
-        // Fetch AI Response
         fetch(`/chatbot/?message=${encodeURIComponent(message)}`)
             .then(res => res.json())
             .then(data => {
                 const typingEl = document.getElementById(typingId);
                 if (typingEl) typingEl.remove();
 
-                // Format simple markdown links or bold items in the bot reply
                 let replyText = data.reply
                     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                    .replace(/📅/g, '📅')
-                    .replace(/💰/g, '💰')
-                    .replace(/📝/g, '📝')
-                    .replace(/📞/g, '📞');
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>');
 
                 chatContainer.innerHTML += `<div class="chat-bubble bot">${replyText}</div>`;
                 chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -282,9 +448,95 @@
             .catch(err => {
                 const typingEl = document.getElementById(typingId);
                 if (typingEl) typingEl.remove();
-                chatContainer.innerHTML += `<div class="chat-bubble bot" style="color: var(--color-high);">Apologies. Connection to the AI engine was interrupted. Please check back shortly.</div>`;
+                chatContainer.innerHTML += `<div class="chat-bubble bot" style="color: var(--color-high);">Connection to the AI engine was interrupted. Please try again.</div>`;
                 chatContainer.scrollTop = chatContainer.scrollHeight;
             });
+    }
+
+    // 4. NLP Diagnostics Sandbox Engine (Interactive Client Simulation)
+    function runSandboxScan() {
+        const text = document.getElementById('sandboxInput').value.trim();
+        const textLower = text.lower ? text.lower() : text.toLowerCase();
+        
+        const polarityText = document.getElementById('sandboxPolarityText');
+        const polarityBar = document.getElementById('sandboxPolarityBar');
+        const priorityBadge = document.getElementById('sandboxPriorityBadge');
+        const diagnosisText = document.getElementById('sandboxDiagnosisText');
+        
+        if (text.length < 5) {
+            polarityText.innerText = "0.0 (Neutral)";
+            polarityBar.style.width = "50%";
+            polarityBar.style.background = "#d97706";
+            priorityBadge.innerText = "LOW";
+            priorityBadge.className = "badge-priority low";
+            diagnosisText.innerText = "Type some text on the left to activate diagnostic scan...";
+            return;
+        }
+
+        // Keywords detection
+        const critical_keywords = ["harassment", "abuse", "ragging", "emergency", "suicide", "depression", "medical", "accident", "fight", "bribe", "stolen", "leak", "fire"];
+        const medium_keywords = ["exam", "fee", "fees", "payment", "hall ticket", "admit card", "marks", "result", "attendance", "portal", "login", "password", "library"];
+        
+        // Sentiment estimation heuristic
+        let score = 0.0;
+        let triggers = [];
+        
+        // Negative keywords estimation
+        const negative_cues = ["bad", "hate", "harass", "fail", "broken", "worst", "terrible", "angry", "abuse", "pain", "delay", "poor"];
+        const positive_cues = ["good", "happy", "great", "excellent", "love", "thanks", "helpful", "resolved", "solved"];
+        
+        negative_cues.forEach(w => { if (textLower.includes(w)) { score -= 0.25; } });
+        positive_cues.forEach(w => { if (textLower.includes(w)) { score += 0.25; } });
+        
+        if (score < -1.0) score = -1.0;
+        if (score > 1.0) score = 1.0;
+        
+        // Dynamic bar update
+        let percentage = ((score + 1.0) / 2.0) * 100;
+        polarityBar.style.width = `${percentage}%`;
+        
+        let sentimentText = "Neutral";
+        if (score > 0.1) {
+            sentimentText = "Positive";
+            polarityBar.style.background = "var(--color-low)";
+        } else if (score < -0.1) {
+            sentimentText = "Negative";
+            polarityBar.style.background = "var(--color-high)";
+        } else {
+            polarityBar.style.background = "var(--color-medium)";
+        }
+        polarityText.innerText = `${score.toFixed(2)} (${sentimentText})`;
+
+        // Priority evaluation
+        let priority = "low";
+        let priorityClass = "badge-priority low";
+        let hasCritical = critical_keywords.filter(w => textLower.includes(w));
+        let hasMedium = medium_keywords.filter(w => textLower.includes(w));
+        
+        if (hasCritical.length > 0 || sentimentText === "Negative") {
+            priority = "high";
+            priorityClass = "badge-priority high";
+        } else if (hasMedium.length > 0 || sentimentText === "Neutral") {
+            priority = "medium";
+            priorityClass = "badge-priority medium";
+        }
+        
+        priorityBadge.innerText = priority.toUpperCase();
+        priorityBadge.className = priorityClass;
+
+        // Formulate diagnostic statement
+        let statement = "";
+        if (hasCritical.length > 0) {
+            statement += `Critical keyword triggered: **"${hasCritical[0]}"** -> flagged **HIGH** priority. `;
+        } else if (sentimentText === "Negative") {
+            statement += `Negative tone detected (polarity score: ${score.toFixed(2)}) -> escalated to **HIGH** priority. `;
+        } else if (hasMedium.length > 0) {
+            statement += `Standard institutional term triggered: **"${hasMedium[0]}"** -> mapped to **MEDIUM** priority. `;
+        } else {
+            statement += `Normal constructive tone and no severe gravity triggers detected -> mapped to **LOW** priority. `;
+        }
+        
+        diagnosisText.innerHTML = statement;
     }
 </script>
 {% endblock %}
