@@ -1019,12 +1019,18 @@ input:focus, textarea:focus, select:focus {
 }
 
 /* ------------------------------------------------------------------
- * GLOBAL FLOATING CHATBOT WIDGET (BOTTOM-LEFT CORNER)
+ * GLOBAL FLOATING CHATBOT WIDGET (BOTTOM-RIGHT CORNER)
  * ------------------------------------------------------------------ */
+@keyframes chatbotBob {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+    100% { transform: translateY(0); }
+}
+
 .chatbot-widget-container {
     position: fixed;
     bottom: 24px;
-    left: 24px;
+    right: 24px;
     z-index: 10000; /* Float above all workspace elements */
 }
 
@@ -1040,18 +1046,21 @@ input:focus, textarea:focus, select:focus {
     font-size: 20px;
     cursor: pointer;
     box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3);
+    animation: chatbotBob 3s ease-in-out infinite;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .chatbot-launcher:hover {
-    transform: scale(1.06) rotate(5deg);
+    transform: scale(1.06) rotate(5deg) translateY(-2px);
     box-shadow: 0 6px 16px rgba(29, 78, 216, 0.45);
+    animation-play-state: paused; /* Pause bobbing during hover */
 }
 
 .chatbot-window {
     position: absolute;
     bottom: 64px;
-    left: 0;
+    right: 0;
+    left: auto;
     width: 320px;
     height: 420px;
     background: #ffffff;
@@ -1063,7 +1072,7 @@ input:focus, textarea:focus, select:focus {
     transform: scale(0.9);
     opacity: 0;
     pointer-events: none;
-    transform-origin: bottom left;
+    transform-origin: bottom right;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 

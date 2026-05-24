@@ -281,6 +281,28 @@
                         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                         .replace(/\*(.*?)\*/g, '<em>$1</em>');
 
+                    // Dashboard Action Integrations (Only active for logged-in users)
+                    if (typeof switchTab === 'function') {
+                        const replyLower = data.reply.toLowerCase();
+                        if (replyLower.includes("exam") || replyLower.includes("notice") || replyLower.includes("announcement")) {
+                            {% if user.role == 'admin' %}
+                                replyText += `<br><button class="btn-primary" style="margin-top:8.5px; padding:4px 8px; font-size:10px; background:var(--accent-purple); border-radius:4px; font-family:'Inter';" onclick="switchTab('publisher')"><i class="fa-solid fa-bullhorn"></i> Open Notice Publisher</button>`;
+                            {% else %}
+                                replyText += `<br><button class="btn-primary" style="margin-top:8.5px; padding:4px 8px; font-size:10px; background:var(--accent-purple); border-radius:4px; font-family:'Inter';" onclick="switchTab('notices')"><i class="fa-solid fa-bullhorn"></i> Go to Notices Board</button>`;
+                            {% endif %}
+                        } else if (replyLower.includes("grievance") || replyLower.includes("complaint") || replyLower.includes("complain")) {
+                            {% if user.role == 'admin' %}
+                                replyText += `<br><button class="btn-primary" style="margin-top:8.5px; padding:4px 8px; font-size:10px; border-radius:4px; font-family:'Inter';" onclick="switchTab('resolver')"><i class="fa-solid fa-shield-halved"></i> Open Grievance Resolver</button>`;
+                            {% else %}
+                                replyText += `<br><button class="btn-primary" style="margin-top:8.5px; padding:4px 8px; font-size:10px; border-radius:4px; font-family:'Inter';" onclick="switchTab('grievances')"><i class="fa-solid fa-clipboard-question"></i> Switch to Grievance Desk</button>`;
+                            {% endif %}
+                        } else if (replyLower.includes("sandbox") || replyLower.includes("diagnose") || replyLower.includes("nlp")) {
+                            {% if user.role == 'student' %}
+                                replyText += `<br><button class="btn-primary" style="margin-top:8.5px; padding:4px 8px; font-size:10px; background:var(--accent-teal); border-radius:4px; font-family:'Inter';" onclick="switchTab('sandbox')"><i class="fa-solid fa-flask"></i> Open AI Diagnostics Hub</button>`;
+                            {% endif %}
+                        }
+                    }
+
                     chatContainer.innerHTML += `<div class="chat-bubble bot" style="align-self: flex-start; background: #ffffff; border: 1px solid var(--border-color); border-left: 3px solid var(--accent-primary); border-radius: 0 8px 8px 8px;">${replyText}</div>`;
                     chatContainer.scrollTop = chatContainer.scrollHeight;
                 })
