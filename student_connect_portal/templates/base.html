@@ -193,10 +193,109 @@
         {% block auth_content %}{% endblock %}
     {% endif %}
 
+    <!-- Global Floating Chatbot Widget (Bottom-Left Corner) -->
+    <div class="chatbot-widget-container">
+        <!-- Floating circular trigger button -->
+        <div class="chatbot-launcher" id="chatbotLauncher" onclick="toggleGlobalChatbot()">
+            <i class="fa-solid fa-robot"></i>
+        </div>
+        
+        <!-- Chatbot Window -->
+        <div class="chatbot-window glass-card" id="chatbotWindow" style="padding:0; overflow:hidden;">
+            <!-- Header -->
+            <div class="chatbot-header">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-robot" style="color: #38bdf8; font-size: 16px;"></i>
+                    <div style="text-align: left;">
+                        <h4 style="font-size: 13px; color: white; margin: 0; font-family: 'Outfit';">AI HelpDesk</h4>
+                        <span style="font-size: 9px; color: #bbf7d0; display: block; font-weight: 600;">● Online Assistant</span>
+                    </div>
+                </div>
+                <button onclick="toggleGlobalChatbot()" style="background: none; border: none; color: white; cursor: pointer; font-size: 16px;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <!-- Quick Chips -->
+            <div class="chat-chips-row" style="padding: 10px 12px 6px 12px; margin-bottom: 0;">
+                <span class="chat-chip" style="font-size: 9px; padding: 2px 6px;" onclick="globalQuickAsk('How to register')">Registrations</span>
+                <span class="chat-chip" style="font-size: 9px; padding: 2px 6px;" onclick="globalQuickAsk('Parent queries')">Parent Guide</span>
+                <span class="chat-chip" style="font-size: 9px; padding: 2px 6px;" onclick="globalQuickAsk('timetable exam details')">Exams</span>
+            </div>
+            
+            <!-- Chat Container logs -->
+            <div class="chat-container" id="globalChatContainer" style="flex: 1; margin-bottom: 0; border: none; background: #f8fafc; border-radius: 0; padding: 12px; height: auto;">
+                <div class="chat-bubble bot">
+                    Hello! I am your AI Student Connect assistant. Ask me anything about registration guides, fee deadlines, exam timetables, or parent services!
+                </div>
+            </div>
+            
+            <!-- Input wrapper -->
+            <div class="chat-input-wrapper" style="padding: 8px 12px; background: white; border-top: 1px solid var(--border-color);">
+                <input type="text" id="globalChatInput" placeholder="Write a message..." onkeydown="checkGlobalChatEnter(event)" style="padding: 6px 10px; font-size: 12px;">
+                <button onclick="sendGlobalChatMessage()" class="btn-primary" style="padding: 6px 10px; font-size: 12px; border-radius: 6px;"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        function toggleGlobalChatbot() {
+            const win = document.getElementById('chatbotWindow');
+            win.classList.toggle('active');
+        }
+
+        function checkGlobalChatEnter(e) {
+            if (e.key === 'Enter') {
+                sendGlobalChatMessage();
+            }
+        }
+
+        function globalQuickAsk(msg) {
+            document.getElementById('globalChatInput').value = msg;
+            sendGlobalChatMessage();
+        }
+
+        function sendGlobalChatMessage() {
+            const input = document.getElementById('globalChatInput');
+            const message = input.value.trim();
+            if (message === '') return;
+
+            const chatContainer = document.getElementById('globalChatContainer');
+
+            // User bubble
+            chatContainer.innerHTML += `<div class="chat-bubble user" style="align-self: flex-end; background: var(--accent-primary); color: white; border-radius: 8px 8px 0 8px;">${message}</div>`;
+            input.value = '';
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            // Typing indicator
+            const typingId = 'global-typing-' + Date.now();
+            chatContainer.innerHTML += `<div class="chat-bubble bot" id="${typingId}" style="align-self: flex-start; background: #ffffff; border: 1px solid var(--border-color); border-left: 3px solid var(--accent-primary); border-radius: 0 8px 8px 8px;"><i>Typing...</i></div>`;
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            // Fetch
+            fetch(`/chatbot/?message=${encodeURIComponent(message)}`)
+                .then(res => res.json())
+                .then(data => {
+                    const typingEl = document.getElementById(typingId);
+                    if (typingEl) typingEl.remove();
+
+                    let replyText = data.reply
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+                    chatContainer.innerHTML += `<div class="chat-bubble bot" style="align-self: flex-start; background: #ffffff; border: 1px solid var(--border-color); border-left: 3px solid var(--accent-primary); border-radius: 0 8px 8px 8px;">${replyText}</div>`;
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                })
+                .catch(err => {
+                    const typingEl = document.getElementById(typingId);
+                    if (typingEl) typingEl.remove();
+                    chatContainer.innerHTML += `<div class="chat-bubble bot" style="align-self: flex-start; background: #ffffff; border: 1px solid var(--border-color); border-left: 3px solid var(--accent-primary); border-radius: 0 8px 8px 8px; color: var(--color-high);">Error: Could not reach AI service.</div>`;
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                });
+        }
+
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('active');
+        }
         }
 
         function toggleNotifications(event) {

@@ -17,3 +17,6 @@ Normal user: done
 username: student_mama
 pass: pubglover12
 email: pawan2@gmail.com
+
+ admin username : ram
+password : ramdhande
