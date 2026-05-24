@@ -1,59 +1,95 @@
 {% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Sign Up | Student Connect Portal</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up | AI Student Connect Portal</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-</head><script>
-function togglePassword(fieldId) {
-    const field = document.getElementById(fieldId);
-    field.type = field.type === "password" ? "text" : "password";
-}
-</script>
-<body>
+</head>
+<body class="auth-page-body">
 
 <div class="auth-container">
-    <div class="auth-card">
-        <h2> Create Account</h2>
+    <div class="auth-card" style="max-width: 460px; padding: 30px;">
+        <div style="font-size: 32px; color: var(--accent-blue); margin-bottom: 10px; text-shadow: 0 0 15px rgba(56, 189, 248, 0.35);">
+            <i class="fa-solid fa-graduation-cap"></i>
+        </div>
+        <h2>Create Account<span class="accent-dot">.</span></h2>
+        <p>Only verified college database students can register</p>
 
         <form method="POST">
-    {% csrf_token %}
-        <input type="text" name="student_id" placeholder="Student ID / PRN" required>
-        <input type="email" name="email" placeholder="College Email ID" required>
-        <input type="text" name="username" placeholder="Choose a username" required>
+            {% csrf_token %}
+            
+            <div style="position: relative; margin-top: 10px;">
+                <input type="text" name="student_id" placeholder="Student ID / Institutional PRN" required style="padding-left: 36px;">
+                <span style="position: absolute; left: 12px; top: 22px; color: var(--text-muted); font-size: 13px;"><i class="fa-solid fa-id-card"></i></span>
+            </div>
+            
+            <div style="position: relative; margin-top: 10px;">
+                <input type="email" name="email" placeholder="Institutional Email ID" required style="padding-left: 36px;">
+                <span style="position: absolute; left: 12px; top: 22px; color: var(--text-muted); font-size: 13px;"><i class="fa-solid fa-envelope"></i></span>
+            </div>
+            
+            <div style="position: relative; margin-top: 10px;">
+                <input type="text" name="username" placeholder="Choose a username" required style="padding-left: 36px;">
+                <span style="position: absolute; left: 12px; top: 22px; color: var(--text-muted); font-size: 13px;"><i class="fa-solid fa-user"></i></span>
+            </div>
 
-    <div style="position:relative;">
-        <input type="password" id="password1" name="password1" placeholder="Create a password" required>
-        <span style="position:absolute; right:12px; top:12px; cursor:pointer;">
-        <i class="fa-solid fa-eye"></i>
-    </span>
-    </div>
+            <!-- Password 1 -->
+            <div style="position: relative; margin-top: 10px;">
+                <input type="password" id="password1" name="password1" placeholder="Create strong password" required style="padding-left: 36px; padding-right: 36px;">
+                <span style="position: absolute; left: 12px; top: 22px; color: var(--text-muted); font-size: 13px;"><i class="fa-solid fa-key"></i></span>
+                <span style="position: absolute; right: 12px; top: 22px; color: var(--text-muted); cursor: pointer;" onclick="togglePasswordVisibility('password1', this)">
+                    <i class="fa-solid fa-eye"></i>
+                </span>
+            </div>
 
-    <div style="position:relative; margin-top:10px;">
-        <input type="password" id="password2" name="password2" placeholder="Confirm password" required>
-        <span style="position:absolute; right:12px; top:12px; cursor:pointer;">
-    <i class="fa-solid fa-eye"></i>
-        </span>
-    </div>
+            <!-- Password 2 -->
+            <div style="position: relative; margin-top: 10px;">
+                <input type="password" id="password2" name="password2" placeholder="Confirm password" required style="padding-left: 36px; padding-right: 36px;">
+                <span style="position: absolute; left: 12px; top: 22px; color: var(--text-muted); font-size: 13px;"><i class="fa-solid fa-shield-halved"></i></span>
+                <span style="position: absolute; right: 12px; top: 22px; color: var(--text-muted); cursor: pointer;" onclick="togglePasswordVisibility('password2', this)">
+                    <i class="fa-solid fa-eye"></i>
+                </span>
+            </div>
 
-    <small style="color:#555;">
-        Password must be at least 8 characters.
-    </small>
+            <div style="text-align: left; margin-top: 10px;">
+                <small style="color: var(--text-muted); font-size: 11px;"><i class="fa-solid fa-circle-info" style="margin-right: 4px;"></i>Passwords must be at least 8 characters.</small>
+            </div>
 
-    <button type="submit">Register</button>
-</form>
-{% if error %}
-<p style="color:red; text-align:center;">{{ error }}</p>
-{% endif %}
+            <button type="submit">Complete Registration</button>
+        </form>
 
+        {% if error %}
+            <div class="error-msg" style="background: rgba(244, 63, 94, 0.1); border: 1px solid rgba(244, 63, 94, 0.2); padding: 10px; border-radius: 8px; font-size: 12.5px; margin-top: 16px;">
+                <i class="fa-solid fa-circle-exclamation" style="margin-right: 4px;"></i> {{ error }}
+            </div>
+        {% endif %}
 
-
-        <p>
-            Already have an account?
-            <a href="/login/">Login</a>
-        </p>
+        <div class="bottom-text">
+            Already have an account? <a href="/login/">Sign In</a>
+        </div>
     </div>
 </div>
 
+<script>
+    function togglePasswordVisibility(fieldId, iconContainer) {
+        const field = document.getElementById(fieldId);
+        const icon = iconContainer.querySelector('i');
+        
+        if (field.type === 'password') {
+            field.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            field.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+</script>
 </body>
 </html>

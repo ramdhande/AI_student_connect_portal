@@ -12,6 +12,8 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user:
             login(request, user)
+            if user.role == 'admin':
+                return redirect('/admin-dashboard/')
             return redirect('/dashboard/')
         else:
             return render(request, 'login.html', {'error': 'Invalid credentials'})

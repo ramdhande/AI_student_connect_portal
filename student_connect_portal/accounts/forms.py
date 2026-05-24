@@ -5,11 +5,9 @@ from .models import User
 class CustomUserCreationForm(UserCreationForm):
     class Meta:
         model = User
-        fields = ['username','email', 'password1', 'password2']
+        fields = ['username', 'email']
         help_texts = {
             'username': None,
-            'password1': None,
-            'password2': None,
         }
 
     def __init__(self, *args, **kwargs):

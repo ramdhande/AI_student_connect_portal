@@ -1,118 +1,290 @@
 {% extends 'base.html' %}
+{% block title %}Student Dashboard | AI Student Connect Portal{% endblock %}
+{% block page_title %}Student Workspace{% endblock %}
+
 {% block content %}
+<div class="dashboard-grid">
+    <!-- Left Column: Notices & Grievance Form -->
+    <div class="dashboard-left-col">
+        <!-- Notices Board Section -->
+        <div class="glass-card" style="margin-bottom: 32px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3><i class="fa-solid fa-bullhorn" style="color: var(--accent-purple); margin-right: 10px;"></i>Announcements Board</h3>
+                <span style="font-size: 12px; color: var(--text-muted);">{{ notices.count }} announcements posted</span>
+            </div>
+            
+            <!-- Category Filter Bar -->
+            <div class="notices-filter-bar">
+                <button class="filter-chip active" onclick="filterNotices('All', this)">All</button>
+                <button class="filter-chip" onclick="filterNotices('Academic', this)">Academic</button>
+                <button class="filter-chip" onclick="filterNotices('Placement', this)">Placement</button>
+                <button class="filter-chip" onclick="filterNotices('Events', this)">Events</button>
+                <button class="filter-chip" onclick="filterNotices('Emergency', this)">Emergency</button>
+                <button class="filter-chip" onclick="filterNotices('Administrative', this)">Administrative</button>
+            </div>
 
-<div class="card">
-    <h3> Notices</h3>
-
-    {% for notice in notices %}
-        <div class="notice-item">
-            <strong>{{ notice.title }}</strong> – {{ notice.category }}
-             <p style="margin:5px 0 0; color:#444;">
-        {{ notice.content }}
-    </p>
+            <!-- Notices Listing -->
+            <div class="notices-container" id="noticesContainer">
+                {% for notice in notices %}
+                    <div class="notice-item-card {{ notice.category }}" data-category="{{ notice.category }}">
+                        <div class="notice-meta">
+                            <span class="notice-badge {{ notice.category }}">{{ notice.category }}</span>
+                            <span class="notice-time"><i class="fa-regular fa-clock" style="margin-right: 4px;"></i>{{ notice.created_at|date:"M d, Y" }}</span>
+                        </div>
+                        <h4 class="notice-title" id="title-{{ notice.id }}">{{ notice.title }}</h4>
+                        <p class="notice-body-text" id="content-{{ notice.id }}">{{ notice.content }}</p>
+                        
+                        <!-- AI Translation Widget -->
+                        <div class="notice-translation-trigger">
+                            <label for="lang-{{ notice.id }}" style="margin: 0; font-size: 11px;"><i class="fa-solid fa-language" style="color: var(--accent-blue); margin-right: 4px;"></i>Translate Announcement:</label>
+                            <select class="translation-select" id="lang-{{ notice.id }}" onchange="triggerTranslation('{{ notice.id }}', this.value)">
+                                <option value="original">Original (English)</option>
+                                <option value="hindi">Hindi (हिंदी)</option>
+                                <option value="marathi">Marathi (मराठी)</option>
+                                <option value="spanish">Spanish (Español)</option>
+                            </select>
+                            <span class="translation-loader" id="loader-{{ notice.id }}"><i class="fa-solid fa-circle-notch fa-spin"></i> Translating...</span>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="empty-state">
+                        <i class="fa-solid fa-folder-open"></i>
+                        <p>No announcements or notices available at this time.</p>
+                    </div>
+                {% endfor %}
+            </div>
         </div>
-    {% empty %}
-        <p>No notices available</p>
-    {% endfor %}
-</div>
 
-<div class="card">
-    <h3> Submit Grievance</h3>
+        <!-- Submit Grievance Form -->
+        <div class="glass-card" id="submit-grievance" style="margin-bottom: 32px;">
+            <div style="margin-bottom: 20px;">
+                <h3><i class="fa-solid fa-circle-plus" style="color: var(--color-high); margin-right: 10px;"></i>File a New Grievance</h3>
+                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Submit your issues securely. Our AI analyzes description sentiment and context severity to auto-prioritize urgent cases.</p>
+            </div>
 
-    <form method="POST" action="/grievance/submit/">
-        {% csrf_token %}
-        <input type="text" name="subject" placeholder="Subject" required>
-        <textarea name="description" rows="4" placeholder="Describe your issue" required></textarea>
-        <br><br>
-        <button type="submit">Submit</button>
-    </form>
-</div>
-
-<div class="card">
-    <h3> My Grievances</h3>
-
-    {% for g in grievances %}
-        <div style="border-bottom:1px solid #ddd; padding:8px 0;">
-            <strong>{{ g.subject }}</strong><br>
-
-            Status:
-            {% if g.status == 'resolved' %}
-                <span style="color:green;"><b>Resolved</b></span>
-            {% else %}
-                <span style="color:orange;"><b>Pending</b></span>
-            {% endif %}
-
-            {% if g.admin_message %}
-                <p style="margin-top:5px; color:#444;">
-                    <b>Admin reply:</b> {{ g.admin_message }}
-                </p>
-            {% endif %}
+            <form method="POST" action="/grievance/submit/">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="subject"><i class="fa-solid fa-heading" style="margin-right: 6px;"></i>Subject / Brief Title</label>
+                    <input type="text" id="subject" name="subject" placeholder="What is the complaint regarding?" required>
+                </div>
+                <div class="form-group">
+                    <label for="description"><i class="fa-solid fa-align-left" style="margin-right: 6px;"></i>Detailed Description</label>
+                    <textarea id="description" name="description" rows="5" placeholder="Describe the problem in detail. Note: AI scanning looks for high priority keywords (e.g. harassment, fee payments, exam timelines) to flag severity." required></textarea>
+                </div>
+                <button type="submit" class="btn-primary"><i class="fa-solid fa-paper-plane" style="margin-right: 8px;"></i>Submit Secure Complaint</button>
+            </form>
         </div>
-    {% empty %}
-        <p>No grievances submitted yet.</p>
-    {% endfor %}
-</div>
 
-<div class="card">
-    <h3> Student Help Chatbot</h3>
+        <!-- Student Grievances Logs -->
+        <div class="glass-card">
+            <div style="margin-bottom: 20px;">
+                <h3><i class="fa-solid fa-list-check" style="color: var(--accent-cyan); margin-right: 10px;"></i>My Filed Grievances</h3>
+                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Track real-time resolution status and official admin comments.</p>
+            </div>
 
-    <div id="chat-box" style="height:200px; overflow-y:auto; border:1px solid #ccc; padding:10px; margin-bottom:10px;">
+            <div class="grievances-list">
+                {% for g in grievances %}
+                    <div class="grievance-row">
+                        <div class="grievance-header">
+                            <h4 style="font-size: 15px; font-weight: 600;">{{ g.subject }}</h4>
+                            <span class="badge-status {{ g.status }}">{{ g.get_status_display }}</span>
+                        </div>
+                        
+                        <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;">{{ g.description }}</p>
+                        
+                        <!-- AI analysis markers -->
+                        <div style="display: flex; gap: 10px; align-items: center; border-top: 1px solid var(--border-glass); padding-top: 10px; flex-wrap: wrap;">
+                            <span style="font-size: 11px; color: var(--text-muted);"><i class="fa-solid fa-robot" style="margin-right: 4px;"></i>AI Analytics:</span>
+                            <span class="badge-priority {{ g.priority }}">Priority: {{ g.priority|upper }}</span>
+                            <span style="font-size: 11px; color: var(--text-secondary); background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); padding: 2px 6px; border-radius: 4px;">
+                                Tone: {{ g.sentiment }}
+                            </span>
+                            <span style="font-size: 11px; color: var(--text-muted); margin-left: auto;">
+                                Submitted: {{ g.created_at|date:"M d, Y" }}
+                            </span>
+                        </div>
+
+                        {% if g.admin_message %}
+                            <div style="background: rgba(56, 189, 248, 0.04); border: 1px solid rgba(56, 189, 248, 0.15); padding: 12px; border-radius: 8px; margin-top: 6px;">
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 12px; font-weight: 600; color: var(--accent-blue);">
+                                    <i class="fa-solid fa-reply"></i>
+                                    <span>Official Administrative Reply:</span>
+                                </div>
+                                <p style="font-size: 12.5px; color: var(--text-primary); line-height: 1.5;">{{ g.admin_message }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% empty %}
+                    <div class="empty-state" style="padding: 30px 0;">
+                        <i class="fa-solid fa-clipboard-check"></i>
+                        <p>No complaints submitted yet. Your history is empty.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
     </div>
 
-    <input type="text" id="chat-input" placeholder="Type your message..."onkeydown="checkEnter(event)"  />
-    <button onclick="sendMessage()">Send</button>
+    <!-- Right Column: AI Chatbot Assistant -->
+    <div class="dashboard-right-col" id="chatbot-section">
+        <div class="glass-card" style="position: sticky; top: 90px;">
+            <div style="margin-bottom: 16px;">
+                <h3 style="display: flex; align-items: center; gap: 8px;">
+                    <span class="brand-icon"><i class="fa-solid fa-robot"></i></span>
+                    <span>AI Portal Assistant</span>
+                </h3>
+                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Instant answers to notices, exams, policies, or translations.</p>
+            </div>
+
+            <!-- Pre-populated Quick Chips -->
+            <div class="chat-chips-row">
+                <span class="chat-chip" onclick="quickAsk('Timetable and Exams')">Exam Notices</span>
+                <span class="chat-chip" onclick="quickAsk('College Fees clear')">Fee Deadlines</span>
+                <span class="chat-chip" onclick="quickAsk('How to file a grievance')">Filing a Grievance</span>
+                <span class="chat-chip" onclick="quickAsk('translate hindi: Final Year Exams will commence from June 15.')">Hindi Translation</span>
+            </div>
+
+            <!-- Chat Window -->
+            <div class="chat-container" id="chatContainer">
+                <div class="chat-bubble bot">
+                    Hello! I'm your Student Connect AI Assistant. Ask me anything about exam updates, administrative deadlines, or how to submit a complaint!
+                </div>
+            </div>
+
+            <!-- Chat Input Wrapper -->
+            <div class="chat-input-wrapper">
+                <input type="text" id="chatInput" placeholder="Type your message here..." onkeydown="checkEnterKey(event)">
+                <button onclick="sendChatMessage()" class="btn-primary" style="padding: 10px 14px;"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
-function checkEnter(event) {
-    if (event.key === "Enter") {
-        sendMessage();
-    }
-}
+    // Filtering Notices Board on client side
+    function filterNotices(category, btnEl) {
+        // Toggle Active Button Styling
+        const buttons = document.querySelectorAll('.filter-chip');
+        buttons.forEach(btn => btn.classList.remove('active'));
+        btnEl.classList.add('active');
 
-function sendMessage() {
-    let input = document.getElementById("chat-input");
-    let message = input.value.trim();
-    if (message === "") return;
-
-    let chatBox = document.getElementById("chat-box");
-
-    // Show user message
-    chatBox.innerHTML += `<p><b>You:</b> ${message}</p>`;
-    input.value = "";
-
-    // Add typing indicator
-    let typingId = "typing-" + Date.now();
-    chatBox.innerHTML += `<p id="${typingId}" style="font-style:italic;color:#666;"><b>Bot:</b> typing.</p>`;
-    chatBox.scrollTop = chatBox.scrollHeight;
-
-    // Animate dots
-    let dots = 1;
-    let typingInterval = setInterval(() => {
-        let typingEl = document.getElementById(typingId);
-        if (!typingEl) return;
-
-        dots = dots % 3 + 1;
-        typingEl.innerHTML = `<b>Bot:</b> typing${".".repeat(dots)}`;
-    }, 500);
-
-    // Fetch bot reply
-    fetch(`/chatbot/?message=${message}`)
-        .then(response => response.json())
-        .then(data => {
-            clearInterval(typingInterval);
-
-            // Remove typing indicator
-            let typingEl = document.getElementById(typingId);
-            if (typingEl) typingEl.remove();
-
-            // Show bot reply
-            chatBox.innerHTML += `<p><b>Bot:</b> ${data.reply}</p>`;
-            chatBox.scrollTop = chatBox.scrollHeight;
+        // Toggle Visibility with Animation
+        const cards = document.querySelectorAll('.notice-item-card');
+        cards.forEach(card => {
+            if (category === 'All' || card.getAttribute('data-category') === category) {
+                card.style.display = 'block';
+                card.style.opacity = '0';
+                setTimeout(() => {
+                    card.style.transition = 'opacity 0.25s ease';
+                    card.style.opacity = '1';
+                }, 10);
+            } else {
+                card.style.display = 'none';
+            }
         });
-}
+    }
+
+    // Dynamic AI Translation fetch
+    const originalTexts = {};
+
+    function triggerTranslation(noticeId, lang) {
+        const titleEl = document.getElementById(`title-${noticeId}`);
+        const contentEl = document.getElementById(`content-${noticeId}`);
+        const loaderEl = document.getElementById(`loader-${noticeId}`);
+
+        // Store original text if not already stored
+        if (!originalTexts[noticeId]) {
+            originalTexts[noticeId] = {
+                title: titleEl.innerText,
+                content: contentEl.innerText
+            };
+        }
+
+        if (lang === 'original') {
+            titleEl.innerText = originalTexts[noticeId].title;
+            contentEl.innerText = originalTexts[noticeId].content;
+            return;
+        }
+
+        // Run fetch
+        loaderEl.style.display = 'inline-block';
+        fetch(`/notices/translate/?notice_id=${noticeId}&lang=${lang}`)
+            .then(res => res.json())
+            .then(data => {
+                loaderEl.style.display = 'none';
+                
+                // Set and animate
+                titleEl.style.opacity = '0';
+                contentEl.style.opacity = '0';
+                setTimeout(() => {
+                    titleEl.innerText = data.translated_title;
+                    contentEl.innerText = data.translated_content;
+                    titleEl.style.transition = 'opacity 0.3s ease';
+                    contentEl.style.transition = 'opacity 0.3s ease';
+                    titleEl.style.opacity = '1';
+                    contentEl.style.opacity = '1';
+                }, 150);
+            })
+            .catch(err => {
+                loaderEl.style.display = 'none';
+                alert('Translation failed. Please try again.');
+            });
+    }
+
+    // AI Chatbot Functionality
+    function checkEnterKey(e) {
+        if (e.key === 'Enter') {
+            sendChatMessage();
+        }
+    }
+
+    function quickAsk(msg) {
+        document.getElementById('chatInput').value = msg;
+        sendChatMessage();
+    }
+
+    function sendChatMessage() {
+        const input = document.getElementById('chatInput');
+        const message = input.value.trim();
+        if (message === '') return;
+
+        const chatContainer = document.getElementById('chatContainer');
+
+        // Render User Chat Bubble
+        chatContainer.innerHTML += `<div class="chat-bubble user">${message}</div>`;
+        input.value = '';
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+
+        // Generate dynamic unique typing ID
+        const typingId = 'typing-' + Date.now();
+        chatContainer.innerHTML += `<div class="chat-bubble bot" id="${typingId}"><i>Typing...</i></div>`;
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+
+        // Fetch AI Response
+        fetch(`/chatbot/?message=${encodeURIComponent(message)}`)
+            .then(res => res.json())
+            .then(data => {
+                const typingEl = document.getElementById(typingId);
+                if (typingEl) typingEl.remove();
+
+                // Format simple markdown links or bold items in the bot reply
+                let replyText = data.reply
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/📅/g, '📅')
+                    .replace(/💰/g, '💰')
+                    .replace(/📝/g, '📝')
+                    .replace(/📞/g, '📞');
+
+                chatContainer.innerHTML += `<div class="chat-bubble bot">${replyText}</div>`;
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            })
+            .catch(err => {
+                const typingEl = document.getElementById(typingId);
+                if (typingEl) typingEl.remove();
+                chatContainer.innerHTML += `<div class="chat-bubble bot" style="color: var(--color-high);">Apologies. Connection to the AI engine was interrupted. Please check back shortly.</div>`;
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            });
+    }
 </script>
-
-
-
 {% endblock %}

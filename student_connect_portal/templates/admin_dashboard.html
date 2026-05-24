@@ -1,0 +1,291 @@
+{% extends 'base.html' %}
+{% block title %}Admin Panel | AI Student Connect Portal{% endblock %}
+{% block page_title %}Administrative Hub{% endblock %}
+
+{% block content %}
+<!-- Administrative Analytics Overview Cards -->
+<section class="admin-stats-grid">
+    <div class="stat-card glass-card">
+        <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+        <div class="stat-info">
+            <h4>Total Students</h4>
+            <div class="stat-value">{{ total_students }}</div>
+        </div>
+    </div>
+    <div class="stat-card glass-card">
+        <div class="stat-icon"><i class="fa-solid fa-bullhorn"></i></div>
+        <div class="stat-info">
+            <h4>Announcements</h4>
+            <div class="stat-value">{{ total_notices }}</div>
+        </div>
+    </div>
+    <div class="stat-card glass-card">
+        <div class="stat-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+        <div class="stat-info">
+            <h4>Active Complaints</h4>
+            <div class="stat-value">{{ pending_grievances|add:inprogress_grievances }}</div>
+        </div>
+    </div>
+    <div class="stat-card glass-card">
+        <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+        <div class="stat-info">
+            <h4>Resolved Grievances</h4>
+            <div class="stat-value" style="color: var(--color-low);">{{ resolved_grievances }}</div>
+        </div>
+    </div>
+</section>
+
+<!-- Graphic Analytics Row -->
+<div class="glass-card" style="margin-bottom: 32px;">
+    <h3 style="margin-bottom: 20px;"><i class="fa-solid fa-chart-pie" style="color: var(--accent-blue); margin-right: 8px;"></i>AI & Metrics Visualizations</h3>
+    <div class="charts-block">
+        <div class="chart-card glass-card" style="box-shadow: none; border-color: rgba(255,255,255,0.02); background: rgba(0,0,0,0.1);">
+            <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center;">
+                <h5 style="margin-bottom: 10px; font-size: 13px; color: var(--text-secondary);">Grievance Sentiment Breakdown</h5>
+                <div style="flex: 1; position: relative; width: 100%; max-height: 140px;">
+                    <canvas id="sentimentChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-card glass-card" style="box-shadow: none; border-color: rgba(255,255,255,0.02); background: rgba(0,0,0,0.1);">
+            <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center;">
+                <h5 style="margin-bottom: 10px; font-size: 13px; color: var(--text-secondary);">Complaint Status Ratios</h5>
+                <div style="flex: 1; position: relative; width: 100%; max-height: 140px;">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Operational Workspaces Split -->
+<div class="admin-workspace-grid">
+    <!-- Left Workspace: Grievances Resolution Desk -->
+    <div class="workspace-left">
+        <div class="glass-card">
+            <div style="margin-bottom: 20px;">
+                <h3><i class="fa-solid fa-shield-halved" style="color: var(--color-high); margin-right: 10px;"></i>Grievances Resolution Workspace</h3>
+                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Monitor, reply to, and resolve complaints submitted by verified students.</p>
+            </div>
+
+            <div class="grievances-logs-list">
+                {% for g in grievances %}
+                    <div class="grievance-row" style="background: rgba(255, 255, 255, 0.015); border-color: rgba(255,255,255,0.05);">
+                        <div class="grievance-header">
+                            <div>
+                                <h4 style="font-size: 15px; font-weight: 600; display: inline-block;">{{ g.subject }}</h4>
+                                <p style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+                                    By: **{{ g.student.username }}** ({% if g.student.student_profile %}{{ g.student.student_profile.full_name }}{% else %}No Profile{% endif %}) | Submitted: {{ g.created_at|date:"M d, Y" }}
+                                </p>
+                            </div>
+                            <span class="badge-status {{ g.status }}">{{ g.status|upper }}</span>
+                        </div>
+
+                        <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin: 4px 0;">
+                            {{ g.description }}
+                        </p>
+
+                        <!-- AI Analytics & Priority Tags -->
+                        <div style="display: flex; gap: 8px; align-items: center; padding: 8px 0; margin: 4px 0; border-top: 1px dashed var(--border-glass); border-bottom: 1px dashed var(--border-glass);">
+                            <span style="font-size: 11px; color: var(--text-muted);"><i class="fa-solid fa-robot" style="margin-right: 4px;"></i>AI Diagnostics:</span>
+                            <span class="badge-priority {{ g.priority }}">Priority: {{ g.priority|upper }}</span>
+                            <span style="font-size: 11px; color: var(--text-secondary); background: rgba(255,255,255,0.02); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border-glass);">
+                                Detected Tone: {{ g.sentiment }}
+                            </span>
+                        </div>
+
+                        <!-- Update Status Form -->
+                        <form method="POST" action="/grievance/update-status/{{ g.id }}/" style="background: rgba(0,0,0,0.15); padding: 14px; border-radius: 8px; margin-top: 8px;">
+                            {% csrf_token %}
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 10px;">
+                                <div>
+                                    <label style="font-size: 11px;">Update Case Status</label>
+                                    <select name="status" style="padding: 6px 12px; font-size: 12px;">
+                                        <option value="pending" {% if g.status == 'pending' %}selected{% endif %}>Pending</option>
+                                        <option value="in_progress" {% if g.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                                        <option value="resolved" {% if g.status == 'resolved' %}selected{% endif %}>Resolved / Closed</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="font-size: 11px;">Official Administrator Reply</label>
+                                    <textarea name="admin_message" rows="1" placeholder="Type resolution or follow-up details..." style="padding: 6px 12px; font-size: 12px; height: 34px; resize: none; overflow-y: auto;">{{ g.admin_message|default:"" }}</textarea>
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <button type="submit" class="btn-primary" style="padding: 6px 14px; font-size: 12px; font-weight: 600;"><i class="fa-solid fa-floppy-disk" style="margin-right: 4px;"></i>Commit Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                {% empty %}
+                    <div class="empty-state">
+                        <i class="fa-solid fa-circle-check" style="color: var(--color-low);"></i>
+                        <p>Perfect clearance! All student complaints resolved.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Workspace: Announcement Publisher with AI Category Suggestion -->
+    <div class="workspace-right">
+        <div class="glass-card" style="position: sticky; top: 90px;">
+            <div style="margin-bottom: 20px;">
+                <h3><i class="fa-solid fa-bullhorn" style="color: var(--accent-purple); margin-right: 10px;"></i>Broadcast Board Publisher</h3>
+                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Publish an announcement. Our local AI classifier will suggest category tags automatically as you type.</p>
+            </div>
+
+            <form method="POST" action="/notices/create/">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="notice_title">Announcement Title</label>
+                    <input type="text" id="notice_title" name="title" placeholder="Enter title (e.g. Wipro hiring campaign)" required oninput="triggerAICategoryScan()">
+                </div>
+                
+                <div class="form-group">
+                    <label for="notice_content">Details / Content</label>
+                    <textarea id="notice_content" name="content" rows="6" placeholder="Draft notice details..." required oninput="triggerAICategoryScan()"></textarea>
+                </div>
+
+                <!-- AI Suggested Category Pill -->
+                <div class="form-group">
+                    <div class="ai-suggested-indicator" id="aiSuggestionPill">
+                        <i class="fa-solid fa-robot" style="color: var(--accent-cyan);"></i>
+                        <span>AI Suggestion: <strong id="aiSuggestedText" style="color: var(--text-primary);">None</strong></span>
+                    </div>
+                </div>
+
+                <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>
+                        <label for="notice_category">Category Tag</label>
+                        <select id="notice_category" name="category" required>
+                            <option value="Academic">Academic</option>
+                            <option value="Placement">Placement</option>
+                            <option value="Events">Events</option>
+                            <option value="Emergency">Emergency</option>
+                            <option value="Administrative" selected>Administrative</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="notice_priority">Board Weight / Priority</label>
+                        <input type="number" id="notice_priority" name="priority" value="0" min="0" max="10">
+                        <small style="font-size: 9px; color: var(--text-muted); display:block; margin-top: 2px;">Higher values sort to the top.</small>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary" style="width: 100%;"><i class="fa-solid fa-circle-arrow-up" style="margin-right: 8px;"></i>Broadcast Announcement</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- AI Categorizer & Charts Scripts -->
+<script>
+    // 1. Chart.js Implementation
+    document.addEventListener("DOMContentLoaded", function () {
+        // Sentiment Doughnut Chart
+        const sentimentCtx = document.getElementById('sentimentChart').getContext('2d');
+        new Chart(sentimentCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Positive', 'Neutral', 'Negative'],
+                datasets: [{
+                    data: [{{ sentiment_pos }}, {{ sentiment_neu }}, {{ sentiment_neg }}],
+                    backgroundColor: [
+                        'rgba(52, 211, 153, 0.75)',  // low/pos
+                        'rgba(251, 191, 36, 0.75)',  // neu
+                        'rgba(244, 63, 94, 0.75)'    // neg
+                    ],
+                    borderColor: 'rgba(16, 23, 38, 0.9)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            color: '#94a3b8',
+                            font: { size: 10, family: 'Inter' }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Resolution Ratios Bar Chart
+        const statusCtx = document.getElementById('statusChart').getContext('2d');
+        new Chart(statusCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Pending', 'In Progress', 'Resolved'],
+                datasets: [{
+                    label: 'Cases Count',
+                    data: [{{ pending_grievances }}, {{ inprogress_grievances }}, {{ resolved_grievances }}],
+                    backgroundColor: [
+                        'rgba(245, 158, 11, 0.7)',
+                        'rgba(59, 130, 246, 0.7)',
+                        'rgba(16, 185, 129, 0.7)'
+                    ],
+                    borderColor: [
+                        'var(--color-pending)',
+                        'var(--color-inprogress)',
+                        'var(--color-resolved)'
+                    ],
+                    borderWidth: 1,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        ticks: { color: '#94a3b8', font: { size: 9 } },
+                        grid: { display: false }
+                    },
+                    y: {
+                        ticks: { color: '#94a3b8', font: { size: 9 }, stepSize: 1 },
+                        grid: { color: 'rgba(255, 255, 255, 0.03)' }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    });
+
+    // 2. Real-time AI Notice Categorizer
+    let categoryScanTimeout = null;
+
+    function triggerAICategoryScan() {
+        // Clear previous timeout (debounce)
+        clearTimeout(categoryScanTimeout);
+        
+        categoryScanTimeout = setTimeout(() => {
+            const title = document.getElementById('notice_title').value.trim();
+            const content = document.getElementById('notice_content').value.trim();
+            
+            if (title.length < 3 && content.length < 5) return;
+
+            // Fetch AJAX Suggestion
+            fetch(`/chatbot/suggest-category/?title=${encodeURIComponent(title)}&content=${encodeURIComponent(content)}`)
+                .then(res => res.json())
+                .then(data => {
+                    const pill = document.getElementById('aiSuggestionPill');
+                    const text = document.getElementById('aiSuggestedText');
+                    
+                    text.innerText = data.category;
+                    pill.classList.add('active');
+
+                    // Set select dropdown automatically as suggestion
+                    const select = document.getElementById('notice_category');
+                    select.value = data.category;
+                });
+        }, 300); // 300ms debounce
+    }
+</script>
+{% endblock %}
