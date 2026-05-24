@@ -1361,3 +1361,78 @@ body.dark-theme table tbody td {
     }
 }
 
+/* ===================================================================
+ * FLOATING CHATBOT INTERACTIVE TEXT & SHAKE EFFECTS
+ * =================================================================== */
+@keyframes chatbotInteractive {
+    0%, 85%, 100% { transform: translateY(0) scale(1) rotate(0deg); }
+    88%, 94% { transform: translateY(-4px) scale(1.04) rotate(-5deg); }
+    91%, 97% { transform: translateY(-4px) scale(1.04) rotate(5deg); }
+}
+
+.chatbot-launcher {
+    animation: chatbotInteractive 5s ease-in-out infinite !important;
+}
+
+.chatbot-help-tooltip {
+    position: absolute;
+    right: 64px;
+    top: 10px;
+    white-space: nowrap;
+    background: #0f172a; /* Authoritative slate dark */
+    color: #ffffff !important;
+    font-family: 'Outfit', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    border: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0.9;
+    letter-spacing: 0.02em;
+    animation: chatbotInteractive 5s ease-in-out infinite !important;
+}
+
+body.dark-theme .chatbot-help-tooltip {
+    background: #1e293b;
+    border-color: rgba(255,255,255,0.05);
+}
+
+.chatbot-help-tooltip:hover {
+    transform: scale(1.06) translateX(-4px) !important;
+    opacity: 1;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+    background: var(--accent-primary) !important;
+}
+
+.pulse-dot {
+    width: 6px;
+    height: 6px;
+    background-color: #10b981; /* Success Emerald */
+    border-radius: 50%;
+    position: relative;
+    display: inline-block;
+}
+
+.pulse-dot::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-color: #10b981;
+    animation: pulseActive 1.6s infinite;
+}
+
+@keyframes pulseActive {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(2.6); opacity: 0; }
+}
+
