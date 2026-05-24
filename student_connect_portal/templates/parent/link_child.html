@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Verify Child Profile | Parent Portal{% endblock %}
+
+{% block content %}
+<div style="max-width: 500px; margin: 40px auto; text-align: left;">
+    <div class="glass-card" style="border-color: rgba(29, 78, 216, 0.15); background: linear-gradient(135deg, rgba(29, 78, 216, 0.02), rgba(15, 118, 110, 0.02));">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <div style="font-size: 40px; color: var(--accent-primary); margin-bottom: 12px;"><i class="fa-solid fa-user-shield"></i></div>
+            <h2 style="font-size: 22px;">Parent-Child Connection Desk</h2>
+            <p style="font-size: 13px; color: var(--text-secondary); margin-top: 6px; line-height: 1.5;">
+                Welcome to the AI Student Connect Parent Portal. To monitor academic performance, lecture timetables, and grievance reports, please verify your child's institutional student record.
+            </p>
+        </div>
+
+        {% if error %}
+            <div style="background: rgba(225, 29, 72, 0.08); border: 1px solid rgba(225, 29, 72, 0.2); padding: 10px 14px; border-radius: 6px; color: var(--color-high); font-size: 12.5px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span>{{ error }}</span>
+            </div>
+        {% endif %}
+
+        <form method="POST" action="/parent/dashboard/link-child/">
+            {% csrf_token %}
+            
+            <div class="form-group" style="margin-bottom: 14px;">
+                <label for="student_id" style="font-weight: 600; font-size: 12px;"><i class="fa-solid fa-id-card" style="margin-right: 6px; color: var(--accent-teal);"></i>Child's Student ID (PRN)</label>
+                <input type="text" id="student_id" name="student_id" placeholder="e.g. STU001" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-primary);" required>
+                <small style="display: block; margin-top: 4px; color: var(--text-muted); font-size: 10.5px;">Entered ID must match the PRN listed in college registry.</small>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label for="full_name" style="font-weight: 600; font-size: 12px;"><i class="fa-solid fa-user" style="margin-right: 6px; color: var(--accent-teal);"></i>Child's Full Name (As Registered)</label>
+                <input type="text" id="full_name" name="full_name" placeholder="e.g. Ram Dhande" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-primary);" required>
+            </div>
+
+            <button type="submit" class="btn-primary" style="width: 100%; padding: 11px; font-weight: 600;"><i class="fa-solid fa-link" style="margin-right: 8px;"></i>Link and Access Dashboard</button>
+        </form>
+
+        <div style="background: rgba(0, 0, 0, 0.01); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; margin-top: 20px;">
+            <h5 style="font-size: 11px; font-weight: 700; margin-bottom: 4px; color: var(--text-primary);">💡 Quick Credentials for Testing:</h5>
+            <p style="font-size: 11px; color: var(--text-secondary); line-height: 1.4; margin: 0;">
+                You can link the seeded student **Ram Dhande** by entering:<br>
+                • Student ID: **STU001**<br>
+                • Full Name: **Ram Dhande**
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

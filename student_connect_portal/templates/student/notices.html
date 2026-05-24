@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% block title %}Announcements Board | AI Student Connect Portal{% endblock %}
+
+{% block content %}
+<div class="glass-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; text-align: left;">
+        <div>
+            <h3><i class="fa-solid fa-bullhorn" style="color: var(--accent-purple); margin-right: 10px;"></i>Announcements Board</h3>
+            <p style="font-size: 12.5px; color: var(--text-secondary); margin-top: 4px;">Click category chips below to filter board notices. Notices are sorted by priority weight.</p>
+        </div>
+        <span style="font-size: 12px; color: var(--text-muted); font-weight: 600;">{{ notices.count }} Board Notices</span>
+    </div>
+    
+    <!-- Category Filter Bar -->
+    <div class="notices-filter-bar" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;">
+        <button class="filter-chip active" onclick="filterNotices('All', this)">All Categories</button>
+        <button class="filter-chip" onclick="filterNotices('Academic', this)">Academic</button>
+        <button class="filter-chip" onclick="filterNotices('Placement', this)">Placement</button>
+        <button class="filter-chip" onclick="filterNotices('Events', this)">Events</button>
+        <button class="filter-chip" onclick="filterNotices('Emergency', this)">Emergency</button>
+        <button class="filter-chip" onclick="filterNotices('Administrative', this)">Administrative</button>
+    </div>
+
+    <!-- Notices Listing -->
+    <div class="notices-container" id="noticesContainer" style="text-align: left;">
+        {% for notice in notices %}
+            <div class="notice-item-card {{ notice.category }}" data-category="{{ notice.category }}" style="margin-bottom: 16px; padding: 18px; border-left: 4px solid var(--accent-primary); border-radius: 8px; background: rgba(0, 0, 0, 0.015); border: 1px solid var(--border-color); border-left-width: 4px;">
+                <div class="notice-meta" style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 8px;">
+                    <span class="notice-badge {{ notice.category }}" style="text-transform: uppercase; font-weight: 700; font-size: 9px;">{{ notice.category }}</span>
+                    <span class="notice-time" style="color: var(--text-muted);"><i class="fa-regular fa-clock" style="margin-right: 4px;"></i>{{ notice.created_at|date:"M d, Y" }}</span>
+                </div>
+                <h4 class="notice-title" id="title-{{ notice.id }}" style="font-size: 16px; margin: 4px 0;">{{ notice.title }}</h4>
+                <p class="notice-body-text" id="content-{{ notice.id }}" style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.5; margin-top: 6px;">{{ notice.content }}</p>
+                
+                <!-- AI Translation Widget -->
+                <div class="notice-translation-trigger" style="margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-color); display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <label for="lang-{{ notice.id }}" style="margin: 0; font-size: 11px; font-weight: 600; color: var(--text-primary);"><i class="fa-solid fa-language" style="color: var(--accent-primary); margin-right: 4px;"></i>Translate Announcement:</label>
+                    <select class="translation-select" id="lang-{{ notice.id }}" onchange="triggerTranslation('{{ notice.id }}', this.value)" style="padding: 4px 8px; font-size: 11.5px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-primary);">
+                        <option value="original">Original (English)</option>
+                        <option value="hindi">Hindi (हिंदी)</option>
+                        <option value="marathi">Marathi (मराठी)</option>
+                        <option value="spanish">Spanish (Español)</option>
+                    </select>
+                    <span class="translation-loader" id="loader-{{ notice.id }}" style="display: none; font-size: 11.5px; color: var(--text-muted);"><i class="fa-solid fa-circle-notch fa-spin"></i> Translating...</span>
+                </div>
+            </div>
+        {% empty %}
+            <div class="empty-state">
+                <i class="fa-solid fa-folder-open"></i>
+                <p>No announcements or notices available at this time.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    // 1. Filtering Notices Board on client side
+    function filterNotices(category, btnEl) {
+        const buttons = document.querySelectorAll('.filter-chip');
+        buttons.forEach(btn => btn.classList.remove('active'));
+        btnEl.classList.add('active');
+
+        const cards = document.querySelectorAll('.notice-item-card');
+        cards.forEach(card => {
+            if (category === 'All' || card.getAttribute('data-category') === category) {
+                card.style.display = 'block';
+                card.style.opacity = '0';
+                setTimeout(() => {
+                    card.style.transition = 'opacity 0.2s ease';
+                    card.style.opacity = '1';
+                }, 10);
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
+    // 2. Dynamic AI Translation fetch
+    const originalTexts = {};
+
+    function triggerTranslation(noticeId, lang) {
+        const titleEl = document.getElementById(`title-${noticeId}`);
+        const contentEl = document.getElementById(`content-${noticeId}`);
+        const loaderEl = document.getElementById(`loader-${noticeId}`);
+
+        if (!originalTexts[noticeId]) {
+            originalTexts[noticeId] = {
+                title: titleEl.innerText,
+                content: contentEl.innerText
+            };
+        }
+
+        if (lang === 'original') {
+            titleEl.innerText = originalTexts[noticeId].title;
+            contentEl.innerText = originalTexts[noticeId].content;
+            return;
+        }
+
+        loaderEl.style.display = 'inline-block';
+        fetch(`/notices/translate/?notice_id=${noticeId}&lang=${lang}`)
+            .then(res => res.json())
+            .then(data => {
+                loaderEl.style.display = 'none';
+                
+                titleEl.style.opacity = '0';
+                contentEl.style.opacity = '0';
+                setTimeout(() => {
+                    titleEl.innerText = data.translated_title;
+                    contentEl.innerText = data.translated_content;
+                    titleEl.style.transition = 'opacity 0.25s ease';
+                    contentEl.style.transition = 'opacity 0.25s ease';
+                    titleEl.style.opacity = '1';
+                    contentEl.style.opacity = '1';
+                }, 150);
+            })
+            .catch(err => {
+                loaderEl.style.display = 'none';
+                alert('Translation failed. Please try again.');
+            });
+    }
+</script>
+{% endblock %}

@@ -18,8 +18,9 @@
 <body class="{% if not user.is_authenticated %}auth-page-body{% endif %}">
 
     {% if user.is_authenticated %}
-    <div class="portal-wrapper">
-        <!-- Sidebar Navigation -->
+    <div class="portal-wrapper {% if user.role != 'admin' %}portal-horizontal-layout{% endif %}">
+        {% if user.role == 'admin' %}
+        <!-- Sidebar Navigation (Admin Only) -->
         <aside class="portal-sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-brand">
@@ -54,59 +55,25 @@
             <!-- Navigation Links -->
             <nav class="sidebar-nav">
                 <ul>
-                    {% if user.role == 'admin' %}
-                        <!-- Admin Multi-Workspace Navigation -->
-                        <li>
-                            <a href="#analytics" class="nav-link nav-tab active" onclick="switchTab('analytics')">
-                                <i class="fa-solid fa-chart-line"></i>
-                                <span>Analytics & Metrics</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#resolver" class="nav-link nav-tab" onclick="switchTab('resolver')">
-                                <i class="fa-solid fa-shield-halved"></i>
-                                <span>Grievances Resolution</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#publisher" class="nav-link nav-tab" onclick="switchTab('publisher')">
-                                <i class="fa-solid fa-bullhorn"></i>
-                                <span>Notice Publisher</span>
-                            </a>
-                        </li>
-                    {% else %}
-                        <!-- Student Multi-Workspace Navigation -->
-                        <li>
-                            <a href="#overview" class="nav-link nav-tab active" onclick="switchTab('overview')">
-                                <i class="fa-solid fa-table-columns"></i>
-                                <span>Dashboard Overview</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#notices" class="nav-link nav-tab" onclick="switchTab('notices')">
-                                <i class="fa-solid fa-bullhorn"></i>
-                                <span>Notices Board</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#grievances" class="nav-link nav-tab" onclick="switchTab('grievances')">
-                                <i class="fa-solid fa-clipboard-question"></i>
-                                <span>Grievance Desk</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#chatbot" class="nav-link nav-tab" onclick="switchTab('chatbot')">
-                                <i class="fa-solid fa-robot"></i>
-                                <span>AI Chatbot Desk</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#sandbox" class="nav-link nav-tab" onclick="switchTab('sandbox')">
-                                <i class="fa-solid fa-flask-vial"></i>
-                                <span>AI Diagnostics Hub</span>
-                            </a>
-                        </li>
-                    {% endif %}
+                    <!-- Admin Navigation Workspaces -->
+                    <li>
+                        <a href="#analytics" class="nav-link nav-tab active" onclick="switchTab('analytics')">
+                            <i class="fa-solid fa-chart-line"></i>
+                            <span>Analytics & Metrics</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#resolver" class="nav-link nav-tab" onclick="switchTab('resolver')">
+                            <i class="fa-solid fa-shield-halved"></i>
+                            <span>Grievances Desk</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#publisher" class="nav-link nav-tab" onclick="switchTab('publisher')">
+                            <i class="fa-solid fa-bullhorn"></i>
+                            <span>Notice Publisher</span>
+                        </a>
+                    </li>
                     
                     <li class="nav-divider"></li>
                     <li>
@@ -122,10 +89,12 @@
                 <p>© 2026 AI Student Connect</p>
             </div>
         </aside>
+        {% endif %}
 
         <!-- Main Content Area -->
         <div class="portal-main">
-            <!-- Header/Topbar -->
+            {% if user.role == 'admin' %}
+            <!-- Header/Topbar (Admin Only) -->
             <header class="portal-header">
                 <div class="header-left">
                     <button class="sidebar-toggle-btn" onclick="toggleSidebar()">
@@ -135,6 +104,40 @@
                 </div>
                 
                 <div class="header-right">
+                    <!-- Theme Toggle Icon (Light/Dark Mode) -->
+                    <button class="header-action-btn" onclick="toggleTheme()" title="Toggle Light/Dark Theme">
+                        <i class="fa-solid fa-moon" id="theme-icon"></i>
+                    </button>
+
+                    <!-- Settings Dropdown Icon -->
+                    <div class="notification-dropdown-container">
+                        <button class="header-action-btn" onclick="toggleSettingsMenu(event)" title="Account Settings">
+                            <i class="fa-solid fa-gear"></i>
+                        </button>
+                        
+                        <!-- Settings Dropdown Window -->
+                        <div class="notification-dropdown glass-card" id="settingsDropdown" style="width: 200px; right: 0;">
+                            <div class="dropdown-header">
+                                <h3 style="font-size:12px;">Portal Settings</h3>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 10px; padding: 10px 0; font-size: 12.5px; text-align: left;">
+                                <a href="#" onclick="alert('Profile Settings are automatically mapped in institutional database.')" style="text-decoration:none; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
+                                    <i class="fa-solid fa-user-gear" style="color:var(--accent-primary);"></i>
+                                    <span>Profile Detail</span>
+                                </a>
+                                <a href="#" onclick="alert('Academic notifications preferences are locked to default.')" style="text-decoration:none; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
+                                    <i class="fa-solid fa-bell-concierge" style="color:var(--color-pending);"></i>
+                                    <span>Alert Prefs</span>
+                                </a>
+                                <hr style="border:none; border-top:1px solid var(--border-color); margin:4px 0;">
+                                <a href="/logout/" style="text-decoration:none; color:var(--color-high); font-weight:600; display:flex; align-items:center; gap:8px;">
+                                    <i class="fa-solid fa-right-from-bracket"></i>
+                                    <span>Sign Out</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Notifications Center -->
                     <div class="notification-dropdown-container">
                         <button class="header-action-btn" onclick="toggleNotifications(event)">
@@ -160,7 +163,7 @@
                                                 <i class="fa-solid fa-circle-exclamation"></i>
                                             {% endif %}
                                         </div>
-                                        <div class="item-content">
+                                        <div class="item-content" style="text-align: left;">
                                             <p>{{ n.message }}</p>
                                             <span class="time">{{ n.created_at|timesince }} ago</span>
                                         </div>
@@ -182,6 +185,148 @@
                     </div>
                 </div>
             </header>
+            {% else %}
+            <!-- Student & Parent Horizontal Top Navbar -->
+            <header class="student-header glass-card">
+                <div class="header-container" style="display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 1400px; margin: 0 auto;">
+                    <!-- Brand logo on the left -->
+                    <div class="sidebar-brand">
+                        <span class="brand-icon"><i class="fa-solid fa-graduation-cap" style="color:#38bdf8;"></i></span>
+                        <span class="brand-text" style="color:var(--text-primary);">StudentConnect<span class="accent-dot">.</span></span>
+                    </div>
+                    
+                    <!-- Interactive horizontal tabs in the center -->
+                    <nav class="student-nav" style="display: flex; gap: 8px;">
+                        {% if user.role == 'student' %}
+                            <a href="/dashboard/home/" class="nav-link {% if '/dashboard/home/' in request.path or request.path == '/dashboard/' %}active{% endif %}">
+                                <i class="fa-solid fa-house"></i>
+                                <span>Home</span>
+                            </a>
+                            <a href="/dashboard/timetable/" class="nav-link {% if '/timetable/' in request.path %}active{% endif %}">
+                                <i class="fa-solid fa-calendar-days"></i>
+                                <span>Timetable</span>
+                            </a>
+                            <a href="/dashboard/grievances/" class="nav-link {% if '/grievances/' in request.path %}active{% endif %}">
+                                <i class="fa-solid fa-clipboard-question"></i>
+                                <span>Grievances</span>
+                            </a>
+                            <a href="/dashboard/notices/" class="nav-link {% if '/notices/' in request.path %}active{% endif %}">
+                                <i class="fa-solid fa-bullhorn"></i>
+                                <span>Notices</span>
+                            </a>
+                            <a href="/dashboard/examination/" class="nav-link {% if '/examination/' in request.path %}active{% endif %}">
+                                <i class="fa-solid fa-award"></i>
+                                <span>Examination</span>
+                            </a>
+                        {% elif user.role == 'parent' %}
+                            <a href="/parent/dashboard/home/" class="nav-link {% if '/parent/dashboard/home/' in request.path or request.path == '/parent/dashboard/' %}active{% endif %}">
+                                <i class="fa-solid fa-house"></i>
+                                <span>Home</span>
+                            </a>
+                            <a href="/parent/dashboard/timetable/" class="nav-link {% if '/parent/dashboard/timetable/' in request.path %}active{% endif %}">
+                                <i class="fa-solid fa-calendar-days"></i>
+                                <span>Timetable</span>
+                            </a>
+                            <a href="/parent/dashboard/grievances/" class="nav-link {% if '/parent/dashboard/grievances/' in request.path %}active{% endif %}">
+                                <i class="fa-solid fa-clipboard-question"></i>
+                                <span>Grievances</span>
+                            </a>
+                            <a href="/parent/dashboard/notices/" class="nav-link {% if '/parent/dashboard/notices/' in request.path %}active{% endif %}">
+                                <i class="fa-solid fa-bullhorn"></i>
+                                <span>Notices</span>
+                            </a>
+                            <a href="/parent/dashboard/examination/" class="nav-link {% if '/parent/dashboard/examination/' in request.path %}active{% endif %}">
+                                <i class="fa-solid fa-award"></i>
+                                <span>Examination</span>
+                            </a>
+                        {% endif %}
+                    </nav>
+                    
+                    <!-- Utilities on the right -->
+                    <div class="header-right" style="display: flex; align-items: center; gap: 16px;">
+                        <!-- Theme Toggle (Light / Dark mode icon) -->
+                        <button class="header-action-btn" onclick="toggleTheme()" title="Toggle Light/Dark Theme">
+                            <i class="fa-solid fa-moon" id="theme-icon"></i>
+                        </button>
+                        
+                        <!-- Settings Dropdown Icon -->
+                        <div class="notification-dropdown-container">
+                            <button class="header-action-btn" onclick="toggleSettingsMenu(event)" title="Account Settings">
+                                <i class="fa-solid fa-gear"></i>
+                            </button>
+                            
+                            <!-- Settings Dropdown Window -->
+                            <div class="notification-dropdown glass-card" id="settingsDropdown" style="width: 200px; right: 0;">
+                                <div class="dropdown-header">
+                                    <h3 style="font-size:12px;">Portal Settings</h3>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 10px; padding: 10px 0; font-size: 12.5px; text-align: left;">
+                                    <a href="#" onclick="alert('Profile Settings are automatically mapped in institutional database.')" style="text-decoration:none; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
+                                        <i class="fa-solid fa-user-gear" style="color:var(--accent-primary);"></i>
+                                        <span>Profile Detail</span>
+                                    </a>
+                                    <a href="#" onclick="alert('Academic notifications preferences are locked to default.')" style="text-decoration:none; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
+                                        <i class="fa-solid fa-bell-concierge" style="color:var(--color-pending);"></i>
+                                        <span>Alert Prefs</span>
+                                    </a>
+                                    <hr style="border:none; border-top:1px solid var(--border-color); margin:4px 0;">
+                                    <a href="/logout/" style="text-decoration:none; color:var(--color-high); font-weight:600; display:flex; align-items:center; gap:8px;">
+                                        <i class="fa-solid fa-right-from-bracket"></i>
+                                        <span>Sign Out</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Notifications Center -->
+                        <div class="notification-dropdown-container">
+                            <button class="header-action-btn" onclick="toggleNotifications(event)">
+                                <i class="fa-solid fa-bell"></i>
+                                {% if notifications %}
+                                    <span class="notification-badge">{{ notifications.count }}</span>
+                                {% endif %}
+                            </button>
+                            
+                            <!-- Dropdown List -->
+                            <div class="notification-dropdown glass-card" id="notificationDropdown">
+                                <div class="dropdown-header">
+                                    <h3>Notifications</h3>
+                                    <span class="badge">{{ notifications.count|default:"0" }} New</span>
+                                </div>
+                                <div class="dropdown-body">
+                                    {% for n in notifications %}
+                                        <div class="notification-item {{ n.notification_type }}">
+                                            <div class="item-icon">
+                                                {% if n.notification_type == 'notice' %}
+                                                    <i class="fa-solid fa-bullhorn"></i>
+                                                {% else %}
+                                                    <i class="fa-solid fa-circle-exclamation"></i>
+                                                {% endif %}
+                                            </div>
+                                            <div class="item-content" style="text-align: left;">
+                                                <p>{{ n.message }}</p>
+                                                <span class="time">{{ n.created_at|timesince }} ago</span>
+                                            </div>
+                                        </div>
+                                    {% empty %}
+                                        <div class="empty-state">
+                                            <i class="fa-regular fa-bell-slash"></i>
+                                            <p>No new notifications</p>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Visual status dot -->
+                        <div class="user-status-indicator">
+                            <span class="status-dot online"></span>
+                            <span class="status-text">Active</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            {% endif %}
 
             <!-- Inner Grid Container -->
             <main class="portal-content-container">
@@ -193,7 +338,7 @@
         {% block auth_content %}{% endblock %}
     {% endif %}
 
-    <!-- Global Floating Chatbot Widget (Bottom-Left Corner) -->
+    <!-- Global Floating Chatbot Widget (Bottom-Right Corner) -->
     <div class="chatbot-widget-container">
         <!-- Floating circular trigger button -->
         <div class="chatbot-launcher" id="chatbotLauncher" onclick="toggleGlobalChatbot()">
@@ -237,6 +382,44 @@
     </div>
 
     <script>
+        // Theme Engine (Light / Dark mode persistent toggler)
+        function toggleTheme() {
+            document.body.classList.toggle('dark-theme');
+            const icon = document.getElementById('theme-icon');
+            if (document.body.classList.contains('dark-theme')) {
+                icon.className = "fa-solid fa-sun";
+                localStorage.setItem('portal-theme', 'dark');
+            } else {
+                icon.className = "fa-solid fa-moon";
+                localStorage.setItem('portal-theme', 'light');
+            }
+        }
+
+        // Apply theme preferences on load
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('portal-theme');
+            const icon = document.getElementById('theme-icon');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+                if (icon) icon.className = "fa-solid fa-sun";
+            }
+        });
+
+        // Settings dropdown toggler
+        function toggleSettingsMenu(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('settingsDropdown');
+            dropdown.classList.toggle('active');
+        }
+
+        // Close dropdown when clicking outside
+        window.addEventListener('click', function(e) {
+            const settingsDropdown = document.getElementById('settingsDropdown');
+            if (settingsDropdown && settingsDropdown.classList.contains('active')) {
+                settingsDropdown.classList.remove('active');
+            }
+        });
+
         function toggleGlobalChatbot() {
             const win = document.getElementById('chatbotWindow');
             win.classList.toggle('active');

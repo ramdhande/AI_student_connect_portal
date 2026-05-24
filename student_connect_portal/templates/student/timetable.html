@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% block title %}Academic Timetable | AI Student Connect Portal{% endblock %}
+
+{% block content %}
+<div class="glass-card">
+    <div style="margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; text-align: left;">
+        <h3><i class="fa-solid fa-calendar-days" style="color: var(--accent-teal); margin-right: 10px;"></i>Interactive Academic Timetable</h3>
+        <p style="font-size: 12.5px; color: var(--text-secondary); margin-top: 4px;">Weekly lecture calendar scheduler. Click on any colored class block to see room details and faculty allocations.</p>
+    </div>
+
+    <!-- Responsive Schedule Table -->
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; min-width: 750px; font-size: 13px; text-align: left;">
+            <thead>
+                <tr style="background: rgba(0, 0, 0, 0.02); border-bottom: 2px solid var(--border-color); text-align: left;">
+                    <th style="padding: 12px 16px; font-weight: 700; width: 120px; color: var(--text-primary);">Time Slot</th>
+                    <th style="padding: 12px 16px; font-weight: 700; color: var(--text-primary);">Monday</th>
+                    <th style="padding: 12px 16px; font-weight: 700; color: var(--text-primary);">Tuesday</th>
+                    <th style="padding: 12px 16px; font-weight: 700; color: var(--text-primary);">Wednesday</th>
+                    <th style="padding: 12px 16px; font-weight: 700; color: var(--text-primary);">Thursday</th>
+                    <th style="padding: 12px 16px; font-weight: 700; color: var(--text-primary);">Friday</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 14px 16px; font-weight: 600; color: var(--text-secondary); background: rgba(0, 0, 0, 0.01);">09:00 - 10:30</td>
+                    <td style="padding: 6px;">
+                        <div onclick="alert('OS Lecture\nProfessor: Dr. V. Deshmukh\nLocation: CSE Hall 4A')" style="background: rgba(37, 99, 235, 0.08); border-left: 3px solid #2563eb; padding: 8px; border-radius: 4px; cursor:pointer;">
+                            <strong style="color: #1d4ed8; display:block;">OS</strong>
+                            <span style="font-size:10.5px; color:var(--text-secondary);">Room 4A</span>
+                        </div>
+                    </td>
+                    <td style="padding: 6px;">
+                        <div onclick="alert('DSA Lecture\nProfessor: Dr. K. Sharma\nLocation: CSE Hall 3B')" style="background: rgba(109, 40, 217, 0.08); border-left: 3px solid #7c3aed; padding: 8px; border-radius: 4px; cursor:pointer;">
+                            <strong style="color: #6d28d9; display:block;">DSA</strong>
+                            <span style="font-size:10.5px; color:var(--text-secondary);">Room 3B</span>
+                        </div>
+                    </td>
+                    <td style="padding: 6px;">
+                        <div onclick="alert('OS Lecture\nProfessor: Dr. V. Deshmukh\nLocation: CSE Hall 4A')" style="background: rgba(37, 99, 235, 0.08); border-left: 3px solid #2563eb; padding: 8px; border-radius: 4px; cursor:pointer;">
+                            <strong style="color: #1d4ed8; display:block;">OS</strong>
+                            <span style="font-size:10.5px; color:var(--text-secondary);">Room 4A</span>
+                        </div>
+                    </td>
+                    <td style="padding: 6px;">
+                        <div onclick="alert('DBMS Lecture\nProfessor: Prof. M. Muley\nLocation: Lab C')" style="background: rgba(15, 118, 110, 0.08); border-left: 3px solid #0f766e; padding: 8px; border-radius: 4px; cursor:pointer;">
+                            <strong style="color: #0f766e; display:block;">DBMS</strong>
+                            <span style="font-size:10.5px; color:var(--text-secondary);">Room 20C</span>
+                        </div>
+                    </td>
+                    <td style="padding: 6px;">
+                        <div onclick="alert('DSA Lecture\nProfessor: Dr. K. Sharma\nLocation: CSE Hall 3B')" style="background: rgba(109, 40, 217, 0.08); border-left: 3px solid #7c3aed; padding: 8px; border-radius: 4px; cursor:pointer;">
+                            <strong style="color: #6d28d9; display:block;">DSA</strong>
+                            <span style="font-size:10.5px; color:var(--text-secondary);">Room 3B</span>
+                        </div>
+                    </td>
+                </tr>
+                
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 14px 16px; font-weight: 600; color: var(--text-secondary); background: rgba(0, 0, 0, 0.01);">10:30 - 12:00</td>
+                    <td style="padding: 6px;">
+                        <div onclick="alert('DBMS Lecture\nProfessor: Prof. M. Muley\nLocation: Room 20C')" style="background: rgba(15, 118, 110, 0.08); border-left: 3px solid #0f766e; padding: 8px; border-radius: 4px; cursor:pointer;">
+                            <strong style="color: #0f766e; display:block;">DBMS</strong>
+                            <span style="font-size:10.5px; color:var(--text-secondary);">Room 20C</span>
+                        </div>
+                    </td>
+                    <td style="padding: 6px;">
+                        <div onclick="alert('ML Lecture\nProfessor: Dr. S. Kulkarni\nLocation: Seminar Hall 2')" style="background: rgba(225, 29, 72, 0.08); border-left: 3px solid #e11d48; padding: 8px; border-radius: 4px; cursor:pointer;">
+                            <strong style="color: #be123c; display:block;">ML</strong>
+                            <span style="font-size:10.5px; color:var(--text-secondary);">Hall 2</span>
+                        </div>
+                    </td>
+                    <td style="padding: 6px;">
+                        <div onclick="alert('DBMS Lecture\nProfessor: Prof. M. Muley\nLocation: Room 20C')" style="background: rgba(15, 118, 110, 0.08); border-left: 3px solid #0f766e; padding: 8px; border-radius: 4px; cursor:pointer;">
+                            <strong style="color: #0f766e; display:block;">DBMS</strong>
+                            <span style="font-size:10.5px; color:var(--text-secondary);">Room 20C</span>
+                        </div>
+                    </td>
+                    <td style="padding: 6px;">
+                        <div onclick="alert('OS Lecture\nProfessor: Dr. V. Deshmukh\nLocation: CSE Hall 4A')" style="background: rgba(37, 99, 235, 0.08); border-left: 3px solid #2563eb; padding: 8px; border-radius: 4px; cursor:pointer;">
+                            <strong style="color: #1d4ed8; display:block;">OS</strong>
+                            <span style="font-size:10.5px; color:var(--text-secondary);">Room 4A</span>
+                        </div>
+                    </td>
+                    <td style="padding: 6px;">
+                        <div onclick="alert('ML Lecture\nProfessor: Dr. S. Kulkarni\nLocation: Seminar Hall 2')" style="background: rgba(225, 29, 72, 0.08); border-left: 3px solid #e11d48; padding: 8px; border-radius: 4px; cursor:pointer;">
+                            <strong style="color: #be123c; display:block;">ML</strong>
+                            <span style="font-size:10.5px; color:var(--text-secondary);">Hall 2</span>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Lunch Slot -->
+                <tr style="background: rgba(0, 0, 0, 0.015); border-bottom: 1px solid var(--border-color); text-align: center;">
+                    <td style="padding: 10px 16px; font-weight: 600; color: var(--text-muted);">12:00 - 01:00</td>
+                    <td colspan="5" style="padding: 10px; font-weight: 600; color: var(--text-muted); font-size:12px; letter-spacing: 0.1em; text-transform: uppercase;">
+                        <i class="fa-solid fa-utensils" style="margin-right: 6px;"></i> Recess / Lunch Break
+                    </td>
+                </tr>
+
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 14px 16px; font-weight: 600; color: var(--text-secondary); background: rgba(0, 0, 0, 0.01);">01:00 - 02:30</td>
+                    <td style="padding: 6px;">
+                        <div onclick="alert('Web Lab\nProfessor: Prof. P. Pethe\nLocation: Lab Room 5')" style="background: rgba(15, 118, 110, 0.08); border-left: 3px solid #0f766e; padding: 8px; border-radius: 4px; cursor:pointer;">
+                            <strong style="color: #0f766e; display:block;">Web Lab</strong>
+                            <span style="font-size:10.5px; color:var(--text-secondary);">Lab 5</span>
+                        </div>
+                    </td>
+                    <td style="padding: 6px;">
+                        <div onclick="alert('CN Lecture\nProfessor: Dr. A. Joshi\nLocation: CSE Hall 2A')" style="background: rgba(109, 40, 217, 0.08); border-left: 3px solid #7c3aed; padding: 8px; border-radius: 4px; cursor:pointer;">
+                            <strong style="color: #6d28d9; display:block;">CN</strong>
+                            <span style="font-size:10.5px; color:var(--text-secondary);">Room 2A</span>
+                        </div>
+                    </td>
+                    <td style="padding: 6px;">
+                        <div onclick="alert('Web Lab\nProfessor: Prof. P. Pethe\nLocation: Lab Room 5')" style="background: rgba(15, 118, 110, 0.08); border-left: 3px solid #0f766e; padding: 8px; border-radius: 4px; cursor:pointer;">
+                            <strong style="color: #0f766e; display:block;">Web Lab</strong>
+                            <span style="font-size:10.5px; color:var(--text-secondary);">Lab 5</span>
+                        </div>
+                    </td>
+                    <td style="padding: 6px;">
+                        <div onclick="alert('CN Lecture\nProfessor: Dr. A. Joshi\nLocation: CSE Hall 2A')" style="background: rgba(109, 40, 217, 0.08); border-left: 3px solid #7c3aed; padding: 8px; border-radius: 4px; cursor:pointer;">
+                            <strong style="color: #6d28d9; display:block;">CN</strong>
+                            <span style="font-size:10.5px; color:var(--text-secondary);">Room 2A</span>
+                        </div>
+                    </td>
+                    <td style="padding: 6px;">
+                        <div onclick="alert('Self Study / Library hours')" style="background: rgba(100, 116, 139, 0.08); border-left: 3px solid #64748b; padding: 8px; border-radius: 4px; cursor:pointer;">
+                            <strong style="color: #475569; display:block;">Library</strong>
+                            <span style="font-size:10.5px; color:var(--text-secondary);">Self Hours</span>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

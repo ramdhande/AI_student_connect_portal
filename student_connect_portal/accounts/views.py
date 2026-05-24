@@ -14,7 +14,10 @@ def login_view(request):
             login(request, user)
             if user.role == 'admin':
                 return redirect('/admin-dashboard/')
-            return redirect('/dashboard/')
+            elif user.role == 'parent':
+                return redirect('/parent/dashboard/home/')
+            else:
+                return redirect('/dashboard/home/')
         else:
             return render(request, 'login.html', {'error': 'Invalid credentials'})
 
@@ -49,7 +52,7 @@ def signup_view(request):
             user.save()
 
             login(request, user)
-            return redirect('/dashboard/')
+            return redirect('/dashboard/home/')
 
         else:
             return render(request, 'signup.html', {

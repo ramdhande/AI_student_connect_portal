@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block title %}Parent Workspace | AI Student Connect Portal{% endblock %}
+
+{% block content %}
+<!-- Welcome Greeting Header Card -->
+<div class="glass-card" style="background: linear-gradient(135deg, rgba(29, 78, 216, 0.04), rgba(15, 118, 110, 0.04)); border-color: rgba(29, 78, 216, 0.12); margin-bottom: 24px; text-align: left;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <h2 style="font-size: 24px; color: var(--accent-primary);"><i class="fa-solid fa-user-tie" style="margin-right: 10px; color: var(--color-medium);"></i>Welcome, Parent!</h2>
+            <p style="color: var(--text-secondary); font-size: 13.5px; margin-top: 6px; max-width: 650px;">
+                You are currently viewing academic metrics and bulletins for your child, **{{ child_profile.full_name }}** (PRN: {{ child_profile.student_id }}, {{ child_profile.department }}, {{ child_profile.year }}th Year).
+            </p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <a href="/parent/dashboard/timetable/" class="btn-primary" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;"><i class="fa-solid fa-calendar-days" style="margin-right: 6px;"></i>Inspect Timetable</a>
+            <a href="/parent/dashboard/examination/" class="btn-primary" style="background: var(--bg-surface); border: 1px solid var(--border-color); color: var(--accent-primary); text-decoration: none; display: inline-flex; align-items: center; justify-content: center;"><i class="fa-solid fa-chart-line" style="margin-right: 6px;"></i>Grades & Performance</a>
+        </div>
+    </div>
+</div>
+
+<!-- Overview KPIs Grid -->
+<section class="admin-stats-grid" style="margin-bottom: 24px;">
+    <a href="/parent/dashboard/notices/" class="stat-card glass-card" style="cursor: pointer; text-decoration: none;">
+        <div class="stat-icon"><i class="fa-solid fa-bullhorn"></i></div>
+        <div class="stat-info">
+            <h4>Board Circulars</h4>
+            <div class="stat-value">{{ notices.count }} Active</div>
+        </div>
+    </a>
+    <a href="/parent/dashboard/grievances/" class="stat-card glass-card" style="cursor: pointer; text-decoration: none;">
+        <div class="stat-icon" style="background: rgba(234, 88, 12, 0.08); color: var(--color-pending);"><i class="fa-solid fa-circle-question"></i></div>
+        <div class="stat-info">
+            <h4>Child's Grievances</h4>
+            <div class="stat-value">{{ grievances.count }} Filed</div>
+        </div>
+    </a>
+    <a href="/parent/dashboard/examination/" class="stat-card glass-card" style="cursor: pointer; text-decoration: none;">
+        <div class="stat-icon" style="background: rgba(109, 40, 217, 0.08); color: var(--accent-purple);"><i class="fa-solid fa-award"></i></div>
+        <div class="stat-info">
+            <h4>End-Sem Admission Card</h4>
+            <div class="stat-value" style="color:var(--accent-purple);">Authorized</div>
+        </div>
+    </a>
+    <a href="/parent/dashboard/timetable/" class="stat-card glass-card" style="cursor: pointer; text-decoration: none;">
+        <div class="stat-icon" style="background: rgba(15, 118, 110, 0.08); color: var(--accent-teal);"><i class="fa-solid fa-calendar-week"></i></div>
+        <div class="stat-info">
+            <h4>Child's Weekly Schedule</h4>
+            <div class="stat-value" style="color:var(--accent-teal);">Inspect</div>
+        </div>
+    </a>
+</section>
+
+<!-- Split Feed & Alerts Workspace -->
+<div class="admin-workspace-grid">
+    <!-- Announcements Peek -->
+    <div class="workspace-left">
+        <div class="glass-card" style="text-align: left;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3><i class="fa-solid fa-list-check" style="color: var(--accent-primary); margin-right: 8px;"></i>Important Circulars</h3>
+                <a href="/parent/dashboard/notices/" style="font-size: 12px; color: var(--accent-primary); font-weight: 600; text-decoration: none;">Open announcements <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+            <div class="notices-container">
+                {% for notice in notices|slice:":2" %}
+                    <div class="notice-item-card {{ notice.category }}" style="margin-bottom: 10px; padding: 12px; border-left: 3px solid var(--accent-primary);">
+                        <div class="notice-meta">
+                            <span class="notice-badge {{ notice.category }}" style="font-size:8px;">{{ notice.category }}</span>
+                            <span class="notice-time" style="font-size:9.5px;">{{ notice.created_at|date:"M d, Y" }}</span>
+                        </div>
+                        <h4 class="notice-title" style="font-size: 14px; margin-top: 4px;">{{ notice.title }}</h4>
+                        <p class="notice-body-text" style="font-size: 12.5px; margin-top: 4px;">{{ notice.content|slice:":100" }}...</p>
+                    </div>
+                {% empty %}
+                    <div class="empty-state">
+                        <i class="fa-solid fa-folder-open"></i>
+                        <p>No notices available.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- System Updates alerts Feed -->
+    <div class="workspace-right">
+        <div class="glass-card" style="text-align: left;">
+            <h3><i class="fa-solid fa-bell" style="color: var(--color-pending); margin-right: 8px;"></i>Alerts and Notifications</h3>
+            <p style="font-size: 11.5px; color: var(--text-secondary); margin-top: 4px; margin-bottom: 16px;">Live alerts matching child's grievance replies and campus updates.</p>
+            
+            <div class="notifications-feed" style="max-height: 220px; overflow-y: auto;">
+                {% for n in notifications %}
+                    <div style="display: flex; gap: 10px; padding: 8px; border-bottom: 1px solid var(--border-color); background: rgba(0,0,0,0.01); border-radius: 6px; margin-bottom: 6px;">
+                        <span style="font-size: 14px; color: var(--accent-primary);"><i class="fa-solid fa-circle-info"></i></span>
+                        <div>
+                            <p style="font-size: 11.5px; color: var(--text-primary); line-height: 1.3;">{{ n.message }}</p>
+                            <span style="font-size: 9px; color: var(--text-muted);">{{ n.created_at|timesince }} ago</span>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="empty-state" style="padding: 16px 0;">
+                        <i class="fa-regular fa-bell-slash"></i>
+                        <p>No active notifications.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

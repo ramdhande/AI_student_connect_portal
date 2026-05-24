@@ -6,26 +6,249 @@ from grievances.models import Grievance, Notification
 from accounts.models import User, StudentProfile
 from ai_module.translation import translate_text
 
+
 @login_required(login_url='/login/')
 def student_dashboard(request):
-    # Role checking: admins should go to the admin dashboard
+    return redirect('/dashboard/home/')
+
+@login_required(login_url='/login/')
+def student_dashboard_home(request):
     if request.user.role == 'admin':
         return redirect('/admin-dashboard/')
+    elif request.user.role == 'parent':
+        return redirect('/parent/dashboard/home/')
         
     notices = Notice.objects.all().order_by('-priority', '-created_at')
     grievances = Grievance.objects.filter(student=request.user).order_by('-created_at')
-    
-    # Mark user's notifications as read or fetch unread ones
     notifications = Notification.objects.filter(recipient=request.user, is_read=False).order_by('-created_at')
     
-    # Optional: Mark them as read on load
-    # notifications.update(is_read=True)
-    
-    return render(request, 'student_dashboard.html', {
-        'notices': notices, 
+    return render(request, 'student/home.html', {
+        'notices': notices,
         'grievances': grievances,
         'notifications': notifications
     })
+
+@login_required(login_url='/login/')
+def student_dashboard_timetable(request):
+    if request.user.role != 'student':
+        return redirect('/login/')
+    notices = Notice.objects.all().order_by('-priority', '-created_at')
+    grievances = Grievance.objects.filter(student=request.user).order_by('-created_at')
+    notifications = Notification.objects.filter(recipient=request.user, is_read=False).order_by('-created_at')
+    return render(request, 'student/timetable.html', {
+        'notices': notices,
+        'grievances': grievances,
+        'notifications': notifications
+    })
+
+@login_required(login_url='/login/')
+def student_dashboard_grievances(request):
+    if request.user.role != 'student':
+        return redirect('/login/')
+    notices = Notice.objects.all().order_by('-priority', '-created_at')
+    grievances = Grievance.objects.filter(student=request.user).order_by('-created_at')
+    notifications = Notification.objects.filter(recipient=request.user, is_read=False).order_by('-created_at')
+    return render(request, 'student/grievances.html', {
+        'notices': notices,
+        'grievances': grievances,
+        'notifications': notifications
+    })
+
+@login_required(login_url='/login/')
+def student_dashboard_notices(request):
+    if request.user.role != 'student':
+        return redirect('/login/')
+    notices = Notice.objects.all().order_by('-priority', '-created_at')
+    grievances = Grievance.objects.filter(student=request.user).order_by('-created_at')
+    notifications = Notification.objects.filter(recipient=request.user, is_read=False).order_by('-created_at')
+    return render(request, 'student/notices.html', {
+        'notices': notices,
+        'grievances': grievances,
+        'notifications': notifications
+    })
+
+@login_required(login_url='/login/')
+def student_dashboard_examination(request):
+    if request.user.role != 'student':
+        return redirect('/login/')
+    notices = Notice.objects.all().order_by('-priority', '-created_at')
+    grievances = Grievance.objects.filter(student=request.user).order_by('-created_at')
+    notifications = Notification.objects.filter(recipient=request.user, is_read=False).order_by('-created_at')
+    return render(request, 'student/examination.html', {
+        'notices': notices,
+        'grievances': grievances,
+        'notifications': notifications
+    })
+
+@login_required(login_url='/login/')
+def student_dashboard_reference(request):
+    if request.user.role != 'student':
+        return redirect('/login/')
+    notices = Notice.objects.all().order_by('-priority', '-created_at')
+    grievances = Grievance.objects.filter(student=request.user).order_by('-created_at')
+    notifications = Notification.objects.filter(recipient=request.user, is_read=False).order_by('-created_at')
+    return render(request, 'student_dashboard_reference.html', {
+        'notices': notices,
+        'grievances': grievances,
+        'notifications': notifications
+    })
+
+@login_required(login_url='/login/')
+def parent_dashboard_home(request):
+    if request.user.role != 'parent':
+        return redirect('/login/')
+        
+    student_id = request.session.get('linked_student_id')
+    if not student_id:
+        return redirect('/parent/dashboard/link-child/')
+        
+    child_profile = get_object_or_404(StudentProfile, student_id=student_id)
+    child_user = User.objects.filter(student_profile=child_profile).first()
+    
+    notices = Notice.objects.all().order_by('-priority', '-created_at')
+    
+    if child_user:
+        grievances = Grievance.objects.filter(student=child_user).order_by('-created_at')
+        notifications = Notification.objects.filter(recipient=child_user, is_read=False).order_by('-created_at')
+    else:
+        grievances = Grievance.objects.none()
+        notifications = Notification.objects.none()
+        
+    return render(request, 'parent/home.html', {
+        'child_profile': child_profile,
+        'notices': notices,
+        'grievances': grievances,
+        'notifications': notifications
+    })
+
+@login_required(login_url='/login/')
+def parent_dashboard_timetable(request):
+    if request.user.role != 'parent':
+        return redirect('/login/')
+        
+    student_id = request.session.get('linked_student_id')
+    if not student_id:
+        return redirect('/parent/dashboard/link-child/')
+        
+    child_profile = get_object_or_404(StudentProfile, student_id=student_id)
+    child_user = User.objects.filter(student_profile=child_profile).first()
+    
+    notices = Notice.objects.all().order_by('-priority', '-created_at')
+    if child_user:
+        grievances = Grievance.objects.filter(student=child_user).order_by('-created_at')
+        notifications = Notification.objects.filter(recipient=child_user, is_read=False).order_by('-created_at')
+    else:
+        grievances = Grievance.objects.none()
+        notifications = Notification.objects.none()
+        
+    return render(request, 'parent/timetable.html', {
+        'child_profile': child_profile,
+        'notices': notices,
+        'grievances': grievances,
+        'notifications': notifications
+    })
+
+@login_required(login_url='/login/')
+def parent_dashboard_grievances(request):
+    if request.user.role != 'parent':
+        return redirect('/login/')
+        
+    student_id = request.session.get('linked_student_id')
+    if not student_id:
+        return redirect('/parent/dashboard/link-child/')
+        
+    child_profile = get_object_or_404(StudentProfile, student_id=student_id)
+    child_user = User.objects.filter(student_profile=child_profile).first()
+    
+    notices = Notice.objects.all().order_by('-priority', '-created_at')
+    if child_user:
+        grievances = Grievance.objects.filter(student=child_user).order_by('-created_at')
+        notifications = Notification.objects.filter(recipient=child_user, is_read=False).order_by('-created_at')
+    else:
+        grievances = Grievance.objects.none()
+        notifications = Notification.objects.none()
+        
+    return render(request, 'parent/grievances.html', {
+        'child_profile': child_profile,
+        'notices': notices,
+        'grievances': grievances,
+        'notifications': notifications
+    })
+
+@login_required(login_url='/login/')
+def parent_dashboard_notices(request):
+    if request.user.role != 'parent':
+        return redirect('/login/')
+        
+    student_id = request.session.get('linked_student_id')
+    if not student_id:
+        return redirect('/parent/dashboard/link-child/')
+        
+    child_profile = get_object_or_404(StudentProfile, student_id=student_id)
+    child_user = User.objects.filter(student_profile=child_profile).first()
+    
+    notices = Notice.objects.all().order_by('-priority', '-created_at')
+    if child_user:
+        grievances = Grievance.objects.filter(student=child_user).order_by('-created_at')
+        notifications = Notification.objects.filter(recipient=child_user, is_read=False).order_by('-created_at')
+    else:
+        grievances = Grievance.objects.none()
+        notifications = Notification.objects.none()
+        
+    return render(request, 'parent/notices.html', {
+        'child_profile': child_profile,
+        'notices': notices,
+        'grievances': grievances,
+        'notifications': notifications
+    })
+
+@login_required(login_url='/login/')
+def parent_dashboard_examination(request):
+    if request.user.role != 'parent':
+        return redirect('/login/')
+        
+    student_id = request.session.get('linked_student_id')
+    if not student_id:
+        return redirect('/parent/dashboard/link-child/')
+        
+    child_profile = get_object_or_404(StudentProfile, student_id=student_id)
+    child_user = User.objects.filter(student_profile=child_profile).first()
+    
+    notices = Notice.objects.all().order_by('-priority', '-created_at')
+    if child_user:
+        grievances = Grievance.objects.filter(student=child_user).order_by('-created_at')
+        notifications = Notification.objects.filter(recipient=child_user, is_read=False).order_by('-created_at')
+    else:
+        grievances = Grievance.objects.none()
+        notifications = Notification.objects.none()
+        
+    return render(request, 'parent/examination.html', {
+        'child_profile': child_profile,
+        'notices': notices,
+        'grievances': grievances,
+        'notifications': notifications
+    })
+
+@login_required(login_url='/login/')
+def parent_link_child(request):
+    if request.user.role != 'parent':
+        return redirect('/login/')
+        
+    if request.method == "POST":
+        student_id = request.POST.get('student_id', '').strip()
+        full_name = request.POST.get('full_name', '').strip()
+        
+        # Verify in StudentProfile
+        profile = StudentProfile.objects.filter(student_id=student_id, full_name__iexact=full_name).first()
+        if profile:
+            request.session['linked_student_id'] = profile.student_id
+            return redirect('/parent/dashboard/home/')
+        else:
+            return render(request, 'parent/link_child.html', {
+                'error': 'Child profile verification failed. Check ID or Full Name.'
+            })
+            
+    return render(request, 'parent/link_child.html')
 
 @login_required(login_url='/login/')
 def admin_dashboard(request):
