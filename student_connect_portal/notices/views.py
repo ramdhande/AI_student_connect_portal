@@ -155,30 +155,8 @@ def parent_dashboard_timetable(request):
 
 @login_required(login_url='/login/')
 def parent_dashboard_grievances(request):
-    if request.user.role != 'parent':
-        return redirect('/login/')
-        
-    student_id = request.session.get('linked_student_id')
-    if not student_id:
-        return redirect('/parent/dashboard/link-child/')
-        
-    child_profile = get_object_or_404(StudentProfile, student_id=student_id)
-    child_user = User.objects.filter(student_profile=child_profile).first()
-    
-    notices = Notice.objects.all().order_by('-priority', '-created_at')
-    if child_user:
-        grievances = Grievance.objects.filter(student=child_user).order_by('-created_at')
-        notifications = Notification.objects.filter(recipient=child_user, is_read=False).order_by('-created_at')
-    else:
-        grievances = Grievance.objects.none()
-        notifications = Notification.objects.none()
-        
-    return render(request, 'parent/grievances.html', {
-        'child_profile': child_profile,
-        'notices': notices,
-        'grievances': grievances,
-        'notifications': notifications
-    })
+    # Grievances are kept private to the student and are not accessible by parents.
+    return redirect('/parent/dashboard/home/')
 
 @login_required(login_url='/login/')
 def parent_dashboard_notices(request):
