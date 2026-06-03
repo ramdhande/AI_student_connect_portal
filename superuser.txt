@@ -20,3 +20,8 @@ email: pawan2@gmail.com
 
  admin username : ram
 password : ramdhande
+
+Teacher User:
+username: teacher_ram
+password: teacher123
+email: teacherram@gmail.com

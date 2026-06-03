@@ -104,6 +104,16 @@ def seed():
     parent_ram.save()
     print("-> Parent 'parent_ram' created successfully (Password: parent123).")
 
+    # F. Teacher User "teacher_ram"
+    teacher_ram = User.objects.create_user(
+        username="teacher_ram",
+        email="teacherram@gmail.com",
+        password="teacher123"
+    )
+    teacher_ram.role = 'teacher'
+    teacher_ram.save()
+    print("-> Teacher 'teacher_ram' created successfully (Password: teacher123).")
+
     print("\n--- Seeding & Repair Finished Successfully! ---")
     print("You can now log in using any of the credentials.")
 

@@ -12,7 +12,7 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user:
             login(request, user)
-            if user.role == 'admin':
+            if user.role in ['admin', 'teacher']:
                 return redirect('/admin-dashboard/')
             elif user.role == 'parent':
                 return redirect('/parent/dashboard/home/')

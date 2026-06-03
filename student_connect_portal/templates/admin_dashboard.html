@@ -5,6 +5,7 @@
 <!-- ==========================================
      TAB 1: ANALYTICS HUB
      ========================================== -->
+{% if user.role == 'admin' %}
 <div class="tab-section" id="tab-analytics">
     <!-- Quick Key-Performance-Indicators Grid -->
     <section class="admin-stats-grid">
@@ -77,10 +78,12 @@
         </div>
     </div>
 </div>
+{% endif %}
 
 <!-- ==========================================
      TAB 2: RESOLVER WORKSPACE
      ========================================== -->
+{% if user.role == 'admin' %}
 <div class="tab-section" id="tab-resolver" style="display: none;">
     <div class="glass-card" style="max-width: 1000px; margin: 0 auto;">
         <div style="margin-bottom: 20px;">
@@ -145,6 +148,7 @@
         </div>
     </div>
 </div>
+{% endif %}
 
 <!-- ==========================================
      TAB 3: NOTICE BOARD PUBLISHER
@@ -202,6 +206,7 @@
 <!-- AI Categorizer & Charts Scripts -->
 <script>
     // 1. Chart.js Implementation
+    {% if user.role == 'admin' %}
     document.addEventListener("DOMContentLoaded", function () {
         // Sentiment Doughnut Chart
         const sentimentCtx = document.getElementById('sentimentChart').getContext('2d');
@@ -277,6 +282,7 @@
             }
         });
     });
+    {% endif %}
 
     // 2. Real-time AI Notice Categorizer (Debounced)
     let categoryScanTimeout = null;

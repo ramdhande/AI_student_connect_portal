@@ -252,7 +252,7 @@ def parent_link_child(request):
 
 @login_required(login_url='/login/')
 def admin_dashboard(request):
-    if request.user.role != 'admin':
+    if request.user.role not in ['admin', 'teacher']:
         return redirect('/dashboard/')
         
     notices = Notice.objects.all().order_by('-created_at')
@@ -287,7 +287,7 @@ def admin_dashboard(request):
 
 @login_required(login_url='/login/')
 def create_notice(request):
-    if request.user.role != 'admin':
+    if request.user.role not in ['admin', 'teacher']:
         return redirect('/dashboard/')
         
     if request.method == "POST":

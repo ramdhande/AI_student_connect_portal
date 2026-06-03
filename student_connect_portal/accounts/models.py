@@ -32,6 +32,7 @@ class User(AbstractUser):
         ('student', 'Student'),
         ('admin', 'Admin'),
         ('parent', 'Parent'),
+        ('teacher', 'Teacher'),
     )
 
     role = models.CharField(

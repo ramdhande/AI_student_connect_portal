@@ -5,7 +5,7 @@ def chatbot_response(request):
     user = request.user
 
     # Allow unauthenticated guest users, but if logged in, enforce standard role validation
-    if user.is_authenticated and user.role not in ['student', 'parent', 'admin']:
+    if user.is_authenticated and user.role not in ['student', 'parent', 'admin', 'teacher']:
         return JsonResponse({'reply': 'Please login with a valid role to use the chatbot.'})
 
     message = request.GET.get('message', '')
