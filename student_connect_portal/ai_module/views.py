@@ -9,7 +9,7 @@ def chatbot_response(request):
         return JsonResponse({'reply': 'Please login with a valid role to use the chatbot.'})
 
     message = request.GET.get('message', '')
-    reply = chatbot_reply(message)
+    reply = chatbot_reply(message, request)
 
     return JsonResponse({'reply': reply})
 
