@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "student_connect_portal/student_connect_portal/wsgi.py",
+      "use": "@vercel/python",
+      "config": {
+        "maxLambdaSize": "15mb",
+        "runtime": "python3.9"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/static/(.*)",
+      "dest": "student_connect_portal/static/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "student_connect_portal/student_connect_portal/wsgi.py"
+    }
+  ]
+}

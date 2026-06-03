@@ -6,7 +6,7 @@
      TAB 1: STUDENT MANAGER (TEACHER SPECIFIC)
      ========================================== -->
 <div class="tab-section" id="tab-students">
-    <!-- Key metrics -->
+    <!-- Key metrics stats panels -->
     <section class="admin-stats-grid" style="margin-bottom: 24px;">
         <div class="stat-card glass-card">
             <div class="stat-icon"><i class="fa-solid fa-graduation-cap"></i></div>
@@ -38,36 +38,82 @@
         </div>
     </section>
 
+    <!-- Classroom Analytics Charts (Enriching the Dashboard) -->
+    <div class="glass-card" style="margin-bottom: 24px; text-align: left;">
+        <h3 style="margin-bottom: 20px;"><i class="fa-solid fa-chart-pie" style="color: var(--accent-primary); margin-right: 8px;"></i>Classroom Analytics & Metrics</h3>
+        <div class="charts-block">
+            <!-- Grade Distribution Bar Chart -->
+            <div class="chart-card glass-card" style="box-shadow: none; border-color: var(--border-color); background: #f8fafc;">
+                <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center;">
+                    <h5 style="margin-bottom: 10px; font-size: 13px; color: var(--text-secondary);">Grade Distribution (All Subjects)</h5>
+                    <div style="flex: 1; position: relative; width: 100%; max-height: 120px;">
+                        <canvas id="gradeDistributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attendance Threshold doughnut Chart -->
+            <div class="chart-card glass-card" style="box-shadow: none; border-color: var(--border-color); background: #f8fafc;">
+                <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center;">
+                    <h5 style="margin-bottom: 10px; font-size: 13px; color: var(--text-secondary);">Attendance Thresholds (>= 75%)</h5>
+                    <div style="flex: 1; position: relative; width: 100%; max-height: 120px;">
+                        <canvas id="attendanceThresholdChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Manager Workspace -->
     <div class="dashboard-grid" style="text-align: left;">
         <!-- Left: Student List and Actions -->
         <div class="dashboard-left-col">
             <div class="glass-card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                    <div>
-                        <h3 style="font-size: 16px; color: var(--text-primary);"><i class="fa-solid fa-users" style="color: var(--accent-primary); margin-right: 8px;"></i>Student Course Mapping</h3>
-                        <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Manage grades and attendance ratios for enrolled students.</p>
-                    </div>
+                <div style="margin-bottom: 16px;">
+                    <h3 style="font-size: 16px; color: var(--text-primary);"><i class="fa-solid fa-users" style="color: var(--accent-primary); margin-right: 8px;"></i>Student Course Mapping</h3>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Manage profiles, grades, and attendance metrics at institutional database levels.</p>
                 </div>
 
                 <div style="overflow-x: auto;">
                     <table style="width: 100%; border-collapse: collapse; font-size: 12.5px;">
                         <thead>
                             <tr style="background: rgba(0,0,0,0.02); border-bottom: 2px solid var(--border-color); text-align: left;">
-                                <th style="padding: 10px 12px; color: var(--text-primary);">Student Name</th>
-                                <th style="padding: 10px 12px; color: var(--text-primary);">Student ID</th>
-                                <th style="padding: 10px 12px; color: var(--text-primary);">Department</th>
-                                <th style="padding: 10px 12px; color: var(--text-primary);">Year</th>
+                                <th style="padding: 10px 12px; color: var(--text-primary);">Student Details</th>
+                                <th style="padding: 10px 12px; color: var(--text-primary);">Midterm Marks</th>
+                                <th style="padding: 10px 12px; color: var(--text-primary);">Attendance</th>
                                 <th style="padding: 10px 12px; color: var(--text-primary); text-align: right;">Update Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for student in students %}
                             <tr style="border-bottom: 1px solid var(--border-color);">
-                                <td style="padding: 12px 12px; font-weight: 600; color: var(--text-primary);">{{ student.full_name }}</td>
-                                <td style="padding: 12px 12px; font-family: monospace; color: var(--text-secondary);">{{ student.student_id }}</td>
-                                <td style="padding: 12px 12px; color: var(--text-secondary);">{{ student.department }}</td>
-                                <td style="padding: 12px 12px; color: var(--text-secondary);">{{ student.year }}</td>
-                                <td style="padding: 12px 12px; text-align: right; display: flex; justify-content: flex-end; gap: 8px;">
+                                <td style="padding: 12px 12px; color: var(--text-primary);">
+                                    <strong style="display: block;">{{ student.full_name }}</strong>
+                                    <span style="font-size: 11px; color: var(--text-muted); display: block; margin-top: 2px;">ID: {{ student.student_id }} | {{ student.department }} | Year {{ student.year }}</span>
+                                </td>
+                                <td style="padding: 12px 12px; color: var(--text-secondary);">
+                                    <div style="display: flex; flex-direction: column; gap: 4px; max-height: 80px; overflow-y: auto;">
+                                        {% for prog in student.progress_records.all %}
+                                            <span style="font-size: 11px; display: block; white-space: nowrap;">
+                                                • {{ prog.subject|slice:":10" }}...: <strong>{{ prog.marks }} ({{ prog.grade }})</strong>
+                                            </span>
+                                        {% empty %}
+                                            <span style="font-size: 11px; color: var(--text-muted); font-style: italic;">No grades logs</span>
+                                        {% endfor %}
+                                    </div>
+                                </td>
+                                <td style="padding: 12px 12px; color: var(--text-secondary);">
+                                    <div style="display: flex; flex-direction: column; gap: 4px; max-height: 80px; overflow-y: auto;">
+                                        {% for att in student.attendance_records.all %}
+                                            <span style="font-size: 11px; display: block; white-space: nowrap;">
+                                                • {{ att.subject|slice:":10" }}...: <strong class="{% if att.percentage >= 75 %}color-low{% else %}color-high{% endif %}" style="color: {% if att.percentage >= 75 %}var(--color-low){% else %}var(--color-high){% endif %};">{{ att.percentage }}%</strong>
+                                            </span>
+                                        {% empty %}
+                                            <span style="font-size: 11px; color: var(--text-muted); font-style: italic;">No logs</span>
+                                        {% endfor %}
+                                    </div>
+                                </td>
+                                <td style="padding: 12px 12px; text-align: right; display: flex; justify-content: flex-end; align-items: center; height: 80px; gap: 8px;">
                                     <button class="btn-primary" onclick="openGradeModal('{{ student.student_id }}', '{{ student.full_name }}')" style="padding: 4px 8px; font-size: 11px; background: var(--accent-primary); border-radius: 4px;">
                                         <i class="fa-solid fa-award"></i> Grade
                                     </button>
@@ -78,7 +124,7 @@
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="5" style="text-align: center; padding: 24px; color: var(--text-muted);">No student profiles found. Use the registrar panel to add students.</td>
+                                <td colspan="4" style="text-align: center; padding: 24px; color: var(--text-muted);">No student profiles found. Use the registrar panel to add students.</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -338,7 +384,7 @@
     </div>
 </div>
 
-<!-- Modal Control Scripts -->
+<!-- Modal & Charts Control Scripts -->
 <script>
     function openGradeModal(studentId, studentName) {
         document.getElementById('grade_student_id').value = studentId;
@@ -395,5 +441,66 @@
                 });
         }, 300);
     }
+
+    // Chart JS Classroom Analytics Initialization
+    document.addEventListener("DOMContentLoaded", function () {
+        // Grade Distribution Chart
+        const gradeCtx = document.getElementById('gradeDistributionChart').getContext('2d');
+        new Chart(gradeCtx, {
+            type: 'bar',
+            data: {
+                labels: ['A+', 'A', 'B+', 'B', 'C', 'F'],
+                datasets: [{
+                    label: 'Students Count',
+                    data: [
+                        {{ grade_counts.A_plus }},
+                        {{ grade_counts.A }},
+                        {{ grade_counts.B_plus }},
+                        {{ grade_counts.B }},
+                        {{ grade_counts.C }},
+                        {{ grade_counts.F }}
+                    ],
+                    backgroundColor: 'rgba(109, 40, 217, 0.75)',
+                    borderColor: '#6d28d9',
+                    borderWidth: 1,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { ticks: { color: '#475569', font: { size: 9, weight: '600' } }, grid: { display: false } },
+                    y: { ticks: { color: '#475569', font: { size: 9 }, stepSize: 1 }, grid: { color: '#f1f5f9' } }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // Attendance Threshold Doughnut Chart
+        const attCtx = document.getElementById('attendanceThresholdChart').getContext('2d');
+        new Chart(attCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['>= 75% (Eligible)', '< 75% (Shortage)'],
+                datasets: [{
+                    data: [{{ att_above }}, {{ att_below }}],
+                    backgroundColor: ['#10b981', '#f43f5e'],
+                    borderColor: '#ffffff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: { color: '#475569', font: { size: 9, family: 'Inter', weight: '600' } }
+                    }
+                }
+            }
+        });
+    });
 </script>
 {% endblock %}

@@ -4,13 +4,11 @@ from .forms import CustomUserCreationForm
 from .models import User, StudentProfile, TeacherProfile, ParentProfile
 
 def login_view(request):
-    # Unified Portal Selection Page
-    return render(request, 'accounts/portal_login.html')
+    return redirect('/student/login/')
 
 
 def signup_view(request):
-    # Unified Portal Selection Page
-    return render(request, 'accounts/portal_signup.html')
+    return redirect('/student/signup/')
 
 
 def generic_login_view(request, role, template_name, redirect_url):

@@ -114,11 +114,16 @@ def parent_dashboard_home(request):
         grievances = Grievance.objects.none()
         notifications = Notification.objects.none()
         
+    # Calculate overall attendance average
+    att_list = Attendance.objects.filter(student=child_profile)
+    overall_attendance = int(sum(a.percentage for a in att_list) / att_list.count()) if att_list.exists() else 0
+        
     return render(request, 'parent/home.html', {
         'child_profile': child_profile,
         'notices': notices,
         'grievances': grievances,
-        'notifications': notifications
+        'notifications': notifications,
+        'overall_attendance': overall_attendance
     })
 
 @login_required(login_url='/login/')
@@ -350,6 +355,22 @@ def teacher_dashboard(request):
     inprogress_grievances = grievances.filter(status='in_progress').count()
     resolved_grievances = grievances.filter(status='resolved').count()
     
+    # Compute grade distribution counts
+    grades = StudentProgress.objects.all()
+    grade_counts = {
+        'A_plus': grades.filter(grade='A+').count(),
+        'A': grades.filter(grade='A').count(),
+        'B_plus': grades.filter(grade='B+').count(),
+        'B': grades.filter(grade='B').count(),
+        'C': grades.filter(grade='C').count(),
+        'F': grades.filter(grade='F').count(),
+    }
+
+    # Compute attendance thresholds
+    att_records = Attendance.objects.all()
+    att_above = att_records.filter(percentage__gte=75).count()
+    att_below = att_records.filter(percentage__lt=75).count()
+    
     return render(request, 'teacher_dashboard.html', {
         'students': students,
         'notices': notices,
@@ -360,6 +381,9 @@ def teacher_dashboard(request):
         'pending_grievances': pending_grievances,
         'inprogress_grievances': inprogress_grievances,
         'resolved_grievances': resolved_grievances,
+        'grade_counts': grade_counts,
+        'att_above': att_above,
+        'att_below': att_below,
     })
 
 
