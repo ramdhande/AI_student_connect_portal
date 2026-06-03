@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from .models import Notice
 from grievances.models import Grievance, Notification
-from accounts.models import User, StudentProfile
+from accounts.models import User, StudentProfile, TeacherProfile, ParentProfile, StudentProgress, Attendance
 from ai_module.translation import translate_text
 
 
@@ -330,3 +330,90 @@ def translate_notice(request):
         'translated_content': translated_content,
         'lang': lang.capitalize()
     })
+
+
+@login_required(login_url='/login/')
+def teacher_dashboard(request):
+    if request.user.role != 'teacher':
+        return redirect('/login/')
+        
+    students = StudentProfile.objects.all()
+    notices = Notice.objects.all().order_by('-created_at')
+    grievances = Grievance.objects.all().order_by('-created_at')
+    
+    # Calculate some dashboard metrics
+    total_students = StudentProfile.objects.count()
+    total_notices = notices.count()
+    total_grievances = grievances.count()
+    
+    pending_grievances = grievances.filter(status='pending').count()
+    inprogress_grievances = grievances.filter(status='in_progress').count()
+    resolved_grievances = grievances.filter(status='resolved').count()
+    
+    return render(request, 'teacher_dashboard.html', {
+        'students': students,
+        'notices': notices,
+        'grievances': grievances,
+        'total_students': total_students,
+        'total_notices': total_notices,
+        'total_grievances': total_grievances,
+        'pending_grievances': pending_grievances,
+        'inprogress_grievances': inprogress_grievances,
+        'resolved_grievances': resolved_grievances,
+    })
+
+
+@login_required(login_url='/login/')
+def teacher_add_student(request):
+    if request.user.role != 'teacher':
+        return redirect('/login/')
+    if request.method == "POST":
+        student_id = request.POST.get('student_id')
+        full_name = request.POST.get('full_name')
+        email = request.POST.get('email')
+        department = request.POST.get('department')
+        year = int(request.POST.get('year', 1))
+        
+        StudentProfile.objects.create(
+            student_id=student_id,
+            full_name=full_name,
+            email=email,
+            department=department,
+            year=year
+        )
+    return redirect('/teacher/dashboard/')
+
+
+@login_required(login_url='/login/')
+def teacher_update_metrics(request):
+    if request.user.role != 'teacher':
+        return redirect('/login/')
+    if request.method == "POST":
+        student_id = request.POST.get('student_id')
+        subject = request.POST.get('subject')
+        metric_type = request.POST.get('metric_type') # 'progress' or 'attendance'
+        
+        student = get_object_or_404(StudentProfile, student_id=student_id)
+        
+        if metric_type == 'progress':
+            marks = int(request.POST.get('marks', 0))
+            grade = request.POST.get('grade', 'F')
+            semester = int(request.POST.get('semester', 1))
+            
+            StudentProgress.objects.update_or_create(
+                student=student,
+                subject=subject,
+                defaults={'marks': marks, 'grade': grade, 'semester': semester}
+            )
+        elif metric_type == 'attendance':
+            percentage = int(request.POST.get('percentage', 0))
+            total_classes = int(request.POST.get('total_classes', 40))
+            classes_attended = int(request.POST.get('classes_attended', 0))
+            
+            Attendance.objects.update_or_create(
+                student=student,
+                subject=subject,
+                defaults={'percentage': percentage, 'total_classes': total_classes, 'classes_attended': classes_attended}
+            )
+            
+    return redirect('/teacher/dashboard/')

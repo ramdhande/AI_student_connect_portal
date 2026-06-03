@@ -5,7 +5,7 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'student_connect_portal.settings')
 django.setup()
 
-from accounts.models import User, StudentProfile
+from accounts.models import User, StudentProfile, TeacherProfile, ParentProfile, StudentProgress, Attendance
 
 def seed():
     print("--- Starting Database Seeding & Repair ---")
@@ -47,6 +47,26 @@ def seed():
     )
     
     print(f"Created {StudentProfile.objects.count()} student profiles.")
+
+    # 2.5. Create institutional Teacher & Parent Profiles
+    print("Creating institutional teacher profiles...")
+    prof_teacher = TeacherProfile.objects.create(
+        teacher_id="TEACH001",
+        full_name="Ram Teacher",
+        email="teacherram@gmail.com",
+        department="Computer Engineering",
+        is_active=True
+    )
+
+    print("Creating institutional parent profiles...")
+    prof_parent = ParentProfile.objects.create(
+        parent_id="PAR001",
+        full_name="Ram Parent",
+        email="parentram@gmail.com",
+        phone="9876543210",
+        linked_student=prof_ram,
+        is_active=True
+    )
 
     # 3. Create Users with properly HASHED passwords
     print("\nCreating users with properly hashed passwords...")
@@ -101,6 +121,7 @@ def seed():
         password="parent123"
     )
     parent_ram.role = 'parent'
+    parent_ram.parent_profile = prof_parent
     parent_ram.save()
     print("-> Parent 'parent_ram' created successfully (Password: parent123).")
 
@@ -111,8 +132,38 @@ def seed():
         password="teacher123"
     )
     teacher_ram.role = 'teacher'
+    teacher_ram.teacher_profile = prof_teacher
     teacher_ram.save()
     print("-> Teacher 'teacher_ram' created successfully (Password: teacher123).")
+
+    # 4. Seed student progress and attendance
+    print("\nSeeding student progress and attendance records...")
+    
+    subjects = [
+        ("DSA (Data Structures & Algorithms)", 88, "A", 85, 40, 34),
+        ("OS (Operating Systems)", 92, "A+", 78, 40, 31),
+        ("DBMS (Database Management Systems)", 85, "A", 88, 40, 35),
+        ("ML (Machine Learning Basics)", 90, "A+", 80, 40, 32),
+        ("CN (Computer Networks)", 84, "B+", 81, 40, 32),
+    ]
+    
+    for subject, marks, grade, percentage, total_classes, classes_attended in subjects:
+        # Progress
+        StudentProgress.objects.create(
+            student=prof_ram,
+            subject=subject,
+            marks=marks,
+            grade=grade,
+            semester=4
+        )
+        # Attendance
+        Attendance.objects.create(
+            student=prof_ram,
+            subject=subject,
+            percentage=percentage,
+            total_classes=total_classes,
+            classes_attended=classes_attended
+        )
 
     print("\n--- Seeding & Repair Finished Successfully! ---")
     print("You can now log in using any of the credentials.")

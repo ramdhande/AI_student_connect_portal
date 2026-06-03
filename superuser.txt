@@ -25,3 +25,11 @@ Teacher User:
 username: teacher_ram
 password: teacher123
 email: teacherram@gmail.com
+Verification Profile ID: TEACH001
+
+Parent User:
+username: parent_ram
+password: parent123
+email: parentram@gmail.com
+Verification Profile ID: PAR001
+Linked Student: STU001 (Ram Dhande)

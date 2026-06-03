@@ -16,6 +16,9 @@ from .views import (
     admin_dashboard,
     create_notice,
     translate_notice,
+    teacher_dashboard,
+    teacher_add_student,
+    teacher_update_metrics,
 )
 
 app_name = 'notices'
@@ -38,6 +41,11 @@ urlpatterns = [
     path('parent/dashboard/notices/', parent_dashboard_notices, name='parent_dashboard_notices'),
     path('parent/dashboard/examination/', parent_dashboard_examination, name='parent_dashboard_examination'),
     path('parent/dashboard/link-child/', parent_link_child, name='parent_link_child'),
+    
+    # Teacher Dashboard Pages
+    path('teacher/dashboard/', teacher_dashboard, name='teacher_dashboard'),
+    path('teacher/add-student/', teacher_add_student, name='teacher_add_student'),
+    path('teacher/update-metrics/', teacher_update_metrics, name='teacher_update_metrics'),
     
     # Admin Pages
     path('admin-dashboard/', admin_dashboard, name='admin_dashboard'),

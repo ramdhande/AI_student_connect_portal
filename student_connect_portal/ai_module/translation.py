@@ -69,16 +69,46 @@ SENTENCE_MAPPINGS = {
     }
 }
 
+import urllib.request
+import urllib.parse
+import json
+
 def translate_text(text, target_lang):
     target_lang = target_lang.lower().strip()
+    
+    # 1. Direct sentence match check from local mapping cache
+    if target_lang in SENTENCE_MAPPINGS and text in SENTENCE_MAPPINGS[target_lang]:
+        return SENTENCE_MAPPINGS[target_lang][text]
+
+    # 2. Dynamic API Translation using public MyMemory Translation API
+    try:
+        lang_pairs = {
+            'hindi': 'en|hi',
+            'marathi': 'en|mr',
+            'spanish': 'en|es'
+        }
+        if target_lang in lang_pairs:
+            langpair = lang_pairs[target_lang]
+            url = "https://api.mymemory.translated.net/get?q=" + urllib.parse.quote(text) + "&langpair=" + langpair
+            
+            req = urllib.request.Request(
+                url, 
+                headers={'User-Agent': 'Mozilla/5.0'}
+            )
+            
+            with urllib.request.urlopen(req, timeout=4) as response:
+                data = json.loads(response.read().decode('utf-8'))
+                translated = data.get('responseData', {}).get('translatedText', '')
+                if translated:
+                    return translated
+    except Exception as e:
+        # Silently fail and fall back to dictionary matching
+        pass
+
+    # 3. Partial / word replacement local dictionary fallback
     if target_lang not in DICTIONARY:
         return text
 
-    # Direct sentence match check
-    if text in SENTENCE_MAPPINGS[target_lang]:
-        return SENTENCE_MAPPINGS[target_lang][text]
-
-    # Partial / word replacement as a fallback
     words = text.split()
     translated_words = []
     for w in words:

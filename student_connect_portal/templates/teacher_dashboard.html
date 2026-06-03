@@ -1,0 +1,399 @@
+{% extends 'base.html' %}
+{% block title %}Teacher Workspace | AI Student Connect Portal{% endblock %}
+
+{% block content %}
+<!-- ==========================================
+     TAB 1: STUDENT MANAGER (TEACHER SPECIFIC)
+     ========================================== -->
+<div class="tab-section" id="tab-students">
+    <!-- Key metrics -->
+    <section class="admin-stats-grid" style="margin-bottom: 24px;">
+        <div class="stat-card glass-card">
+            <div class="stat-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+            <div class="stat-info">
+                <h4>Verified Students</h4>
+                <div class="stat-value">{{ total_students }}</div>
+            </div>
+        </div>
+        <div class="stat-card glass-card">
+            <div class="stat-icon" style="background: rgba(109, 40, 217, 0.08); color: var(--accent-purple);"><i class="fa-solid fa-bullhorn"></i></div>
+            <div class="stat-info">
+                <h4>Faculty Notices</h4>
+                <div class="stat-value">{{ total_notices }}</div>
+            </div>
+        </div>
+        <div class="stat-card glass-card">
+            <div class="stat-icon" style="background: rgba(234, 88, 12, 0.08); color: var(--color-pending);"><i class="fa-solid fa-clipboard-question"></i></div>
+            <div class="stat-info">
+                <h4>Open Grievances</h4>
+                <div class="stat-value">{{ pending_grievances|add:inprogress_grievances }}</div>
+            </div>
+        </div>
+        <div class="stat-card glass-card">
+            <div class="stat-icon" style="background: rgba(16, 185, 129, 0.08); color: var(--color-resolved);"><i class="fa-solid fa-circle-check"></i></div>
+            <div class="stat-info">
+                <h4>Resolved Grievances</h4>
+                <div class="stat-value" style="color: var(--color-low);">{{ resolved_grievances }}</div>
+            </div>
+        </div>
+    </section>
+
+    <div class="dashboard-grid" style="text-align: left;">
+        <!-- Left: Student List and Actions -->
+        <div class="dashboard-left-col">
+            <div class="glass-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <div>
+                        <h3 style="font-size: 16px; color: var(--text-primary);"><i class="fa-solid fa-users" style="color: var(--accent-primary); margin-right: 8px;"></i>Student Course Mapping</h3>
+                        <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Manage grades and attendance ratios for enrolled students.</p>
+                    </div>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 12.5px;">
+                        <thead>
+                            <tr style="background: rgba(0,0,0,0.02); border-bottom: 2px solid var(--border-color); text-align: left;">
+                                <th style="padding: 10px 12px; color: var(--text-primary);">Student Name</th>
+                                <th style="padding: 10px 12px; color: var(--text-primary);">Student ID</th>
+                                <th style="padding: 10px 12px; color: var(--text-primary);">Department</th>
+                                <th style="padding: 10px 12px; color: var(--text-primary);">Year</th>
+                                <th style="padding: 10px 12px; color: var(--text-primary); text-align: right;">Update Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 12px 12px; font-weight: 600; color: var(--text-primary);">{{ student.full_name }}</td>
+                                <td style="padding: 12px 12px; font-family: monospace; color: var(--text-secondary);">{{ student.student_id }}</td>
+                                <td style="padding: 12px 12px; color: var(--text-secondary);">{{ student.department }}</td>
+                                <td style="padding: 12px 12px; color: var(--text-secondary);">{{ student.year }}</td>
+                                <td style="padding: 12px 12px; text-align: right; display: flex; justify-content: flex-end; gap: 8px;">
+                                    <button class="btn-primary" onclick="openGradeModal('{{ student.student_id }}', '{{ student.full_name }}')" style="padding: 4px 8px; font-size: 11px; background: var(--accent-primary); border-radius: 4px;">
+                                        <i class="fa-solid fa-award"></i> Grade
+                                    </button>
+                                    <button class="btn-primary" onclick="openAttendanceModal('{{ student.student_id }}', '{{ student.full_name }}')" style="padding: 4px 8px; font-size: 11px; background: var(--accent-teal); border-radius: 4px;">
+                                        <i class="fa-solid fa-user-check"></i> Attendance
+                                    </button>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 24px; color: var(--text-muted);">No student profiles found. Use the registrar panel to add students.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Registrar Panel (Add Student) -->
+        <div class="dashboard-right-col">
+            <div class="glass-card">
+                <div style="margin-bottom: 16px;">
+                    <h3 style="font-size: 16px; color: var(--text-primary);"><i class="fa-solid fa-user-plus" style="color: var(--accent-purple); margin-right: 8px;"></i>Student Registrar</h3>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Add authorized student records to institutional databases.</p>
+                </div>
+
+                <form method="POST" action="/teacher/add-student/">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="student_id">Institutional Student ID</label>
+                        <input type="text" name="student_id" placeholder="e.g. STU004" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="full_name">Student Full Name</label>
+                        <input type="text" name="full_name" placeholder="e.g. Rahul Sharma" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Student Email Address</label>
+                        <input type="email" name="email" placeholder="e.g. rahul@gmail.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="department">Department Track</label>
+                        <input type="text" name="department" placeholder="e.g. Computer Science" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="year">Academic Study Year</label>
+                        <input type="number" name="year" value="1" min="1" max="4" required>
+                    </div>
+                    <button type="submit" class="btn-primary" style="width: 100%; margin-top: 8px; background: var(--accent-purple);"><i class="fa-solid fa-floppy-disk" style="margin-right: 6px;"></i>Add Profile Entry</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==========================================
+     TAB 2: NOTICE PUBLISHER (COPIED/ADAPTED)
+     ========================================== -->
+<div class="tab-section" id="tab-publisher" style="display: none; text-align: left;">
+    <div class="glass-card" style="max-width: 750px; margin: 0 auto;">
+        <div style="margin-bottom: 20px;">
+            <h3><i class="fa-solid fa-bullhorn" style="color: var(--accent-purple); margin-right: 10px;"></i>Broadcast Board Publisher</h3>
+            <p style="font-size: 12.5px; color: var(--text-secondary); margin-top: 4px;">Post a campus announcement. Our local AI NLP engine evaluates character strings in real-time to suggest notice categories automatically.</p>
+        </div>
+
+        <form method="POST" action="/notices/create/">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="notice_title">Announcement Header Title</label>
+                <input type="text" id="notice_title" name="title" placeholder="e.g. Wipro Placement Drive scheduled next week" required oninput="triggerAICategoryScan()">
+            </div>
+            
+            <div class="form-group">
+                <label for="notice_content">Details / Body Text</label>
+                <textarea id="notice_content" name="content" rows="6" placeholder="Write full details here..." required oninput="triggerAICategoryScan()"></textarea>
+            </div>
+
+            <!-- AI Suggested Category Pill Indicator -->
+            <div class="form-group">
+                <div class="ai-suggested-indicator" id="aiSuggestionPill" style="display: none; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-robot"></i>
+                    <span>AI Classifier Category Suggestion: <strong id="aiSuggestedText">None</strong></span>
+                </div>
+            </div>
+
+            <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div>
+                    <label for="notice_category">Notice Category Tag</label>
+                    <select id="notice_category" name="category" required>
+                        <option value="Academic">Academic</option>
+                        <option value="Placement">Placement</option>
+                        <option value="Events">Events</option>
+                        <option value="Emergency">Emergency</option>
+                        <option value="Administrative" selected>Administrative</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="notice_priority">Board Weight / Sorting Priority</label>
+                    <input type="number" id="notice_priority" name="priority" value="0" min="0" max="10">
+                    <small style="font-size: 9.5px; color: var(--text-muted); display: block; margin-top: 2px;">Higher values sort to the top of notice boards.</small>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-primary" style="width: 100%;"><i class="fa-solid fa-bullhorn" style="margin-right: 8px;"></i>Broadcast Announcement</button>
+        </form>
+    </div>
+</div>
+
+<!-- ==========================================
+     TAB 3: RESOLVER WORKSPACE (GRIEVANCES)
+     ========================================== -->
+<div class="tab-section" id="tab-resolver" style="display: none; text-align: left;">
+    <div class="glass-card" style="max-width: 1000px; margin: 0 auto;">
+        <div style="margin-bottom: 20px;">
+            <h3><i class="fa-solid fa-shield-halved" style="color: var(--color-high); margin-right: 10px;"></i>Grievances Resolution Workspace</h3>
+            <p style="font-size: 12.5px; color: var(--text-secondary); margin-top: 4px;">Review student complaints, examine the AI Diagnostics priority/sentiment, type responses, and commit changes.</p>
+        </div>
+
+        <div class="grievances-logs-list">
+            {% for g in grievances %}
+                <div class="grievance-row" style="background: #f8fafc; border-color: var(--border-color); margin-bottom: 16px;">
+                    <div class="grievance-header">
+                        <div>
+                            <h4 style="font-size: 15px; font-weight: 700;">{{ g.subject }}</h4>
+                            <p style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+                                Submitted by: **{{ g.student.username }}** ({% if g.student.student_profile %}{{ g.student.student_profile.full_name }}{% else %}No Profile{% endif %}) | Date: {{ g.created_at|date:"M d, Y" }}
+                            </p>
+                        </div>
+                        <span class="badge-status {{ g.status }}">{{ g.get_status_display }}</span>
+                    </div>
+
+                    <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin: 8px 0;">
+                        {{ g.description }}
+                    </p>
+
+                    <!-- AI Diagnostics Badge Details -->
+                    <div style="display: flex; gap: 8px; align-items: center; padding: 8px 0; margin-bottom: 10px; border-top: 1px dashed var(--border-color); border-bottom: 1px dashed var(--border-color);">
+                        <span style="font-size: 11px; color: var(--text-muted);"><i class="fa-solid fa-robot" style="margin-right: 4px;"></i>AI Diagnostics:</span>
+                        <span class="badge-priority {{ g.priority }}">Priority: {{ g.priority|upper }}</span>
+                        <span style="font-size: 11px; color: var(--text-secondary); background: #ffffff; border: 1px solid var(--border-color); padding: 1px 6px; border-radius: 3px;">
+                            Tone: {{ g.sentiment }}
+                        </span>
+                    </div>
+
+                    <!-- Update Status Action Form -->
+                    <form method="POST" action="/grievance/update-status/{{ g.id }}/" style="background: #ffffff; border: 1px solid var(--border-color); padding: 16px; border-radius: 8px;">
+                        {% csrf_token %}
+                        <div style="display: grid; grid-template-columns: 4fr 8fr; gap: 16px; margin-bottom: 12px;">
+                            <div>
+                                <label style="font-size: 12px; font-weight: 600;">Update Case Status</label>
+                                <select name="status" style="font-size: 12.5px; padding: 8px;">
+                                    <option value="pending" {% if g.status == 'pending' %}selected{% endif %}>Pending</option>
+                                    <option value="in_progress" {% if g.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                                    <option value="resolved" {% if g.status == 'resolved' %}selected{% endif %}>Resolved / Closed</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size: 12px; font-weight: 600;">Administrative Reply Message</label>
+                                <textarea name="admin_message" rows="2" placeholder="Write follow-up, advice, or resolution notes here..." style="font-size: 12.5px; padding: 8px; resize: vertical;">{{ g.admin_message|default:"" }}</textarea>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <button type="submit" class="btn-primary" style="padding: 8px 16px; font-size: 13px;"><i class="fa-solid fa-floppy-disk" style="margin-right: 6px;"></i>Save Grievance Changes</button>
+                        </div>
+                    </form>
+                </div>
+            {% empty %}
+                <div class="empty-state">
+                    <i class="fa-solid fa-circle-check" style="color: var(--color-low); font-size: 32px;"></i>
+                    <p>Perfect clearance! No complaints currently need resolving.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- ==========================================
+     MODAL WINDOWS FOR GRADE & ATTENDANCE UPDATES
+     ========================================== -->
+<!-- Grade Update Modal -->
+<div id="gradeModal" style="display: none; position: fixed; z-index: 200; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center;">
+    <div class="glass-card" style="background: #ffffff; width: 400px; padding: 24px; text-align: left;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+            <h4 style="font-size: 16px; color: var(--text-primary);"><i class="fa-solid fa-award" style="color: var(--accent-primary); margin-right: 6px;"></i>Record Student Grade</h4>
+            <span onclick="closeGradeModal()" style="cursor: pointer; font-size: 18px; color: var(--text-muted);"><i class="fa-solid fa-xmark"></i></span>
+        </div>
+        <form method="POST" action="/teacher/update-metrics/">
+            {% csrf_token %}
+            <input type="hidden" name="metric_type" value="progress">
+            <input type="hidden" id="grade_student_id" name="student_id">
+            
+            <div style="margin-bottom: 10px;">
+                <strong>Student:</strong> <span id="grade_student_name"></span>
+            </div>
+            
+            <div class="form-group">
+                <label for="grade_subject">Subject</label>
+                <select name="subject" required>
+                    <option value="DSA (Data Structures & Algorithms)">DSA (Data Structures & Algorithms)</option>
+                    <option value="OS (Operating Systems)">OS (Operating Systems)</option>
+                    <option value="DBMS (Database Management Systems)">DBMS (Database Management Systems)</option>
+                    <option value="ML (Machine Learning Basics)">ML (Machine Learning Basics)</option>
+                    <option value="CN (Computer Networks)">CN (Computer Networks)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="grade_marks">Mid-Term Marks</label>
+                <input type="number" name="marks" min="0" max="100" placeholder="e.g. 90" required>
+            </div>
+            <div class="form-group">
+                <label for="grade_letter">Assigned Grade</label>
+                <input type="text" name="grade" placeholder="e.g. A+" required>
+            </div>
+            <div class="form-group">
+                <label for="grade_semester">Semester</label>
+                <input type="number" name="semester" value="4" min="1" max="8" required>
+            </div>
+            
+            <button type="submit" class="btn-primary" style="width: 100%;"><i class="fa-solid fa-floppy-disk" style="margin-right: 6px;"></i>Save Grades Record</button>
+        </form>
+    </div>
+</div>
+
+<!-- Attendance Update Modal -->
+<div id="attendanceModal" style="display: none; position: fixed; z-index: 200; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center;">
+    <div class="glass-card" style="background: #ffffff; width: 400px; padding: 24px; text-align: left;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+            <h4 style="font-size: 16px; color: var(--text-primary);"><i class="fa-solid fa-user-check" style="color: var(--accent-teal); margin-right: 6px;"></i>Record Student Attendance</h4>
+            <span onclick="closeAttendanceModal()" style="cursor: pointer; font-size: 18px; color: var(--text-muted);"><i class="fa-solid fa-xmark"></i></span>
+        </div>
+        <form method="POST" action="/teacher/update-metrics/">
+            {% csrf_token %}
+            <input type="hidden" name="metric_type" value="attendance">
+            <input type="hidden" id="att_student_id" name="student_id">
+            
+            <div style="margin-bottom: 10px;">
+                <strong>Student:</strong> <span id="att_student_name"></span>
+            </div>
+            
+            <div class="form-group">
+                <label for="att_subject">Subject</label>
+                <select name="subject" required>
+                    <option value="DSA (Data Structures & Algorithms)">DSA (Data Structures & Algorithms)</option>
+                    <option value="OS (Operating Systems)">OS (Operating Systems)</option>
+                    <option value="DBMS (Database Management Systems)">DBMS (Database Management Systems)</option>
+                    <option value="ML (Machine Learning Basics)">ML (Machine Learning Basics)</option>
+                    <option value="CN (Computer Networks)">CN (Computer Networks)</option>
+                </select>
+            </div>
+            <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div>
+                    <label for="att_attended">Classes Attended</label>
+                    <input type="number" id="att_attended" name="classes_attended" min="0" value="30" oninput="recalcAttPercentage()" required>
+                </div>
+                <div>
+                    <label for="att_total">Total Lectures</label>
+                    <input type="number" id="att_total" name="total_classes" min="1" value="40" oninput="recalcAttPercentage()" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="att_percentage">Calculated Percentage (%)</label>
+                <input type="number" id="att_percentage" name="percentage" value="75" readonly style="background: #f1f5f9; cursor: not-allowed;">
+            </div>
+            
+            <button type="submit" class="btn-primary" style="width: 100%; background: var(--accent-teal);"><i class="fa-solid fa-floppy-disk" style="margin-right: 6px;"></i>Save Attendance Log</button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Control Scripts -->
+<script>
+    function openGradeModal(studentId, studentName) {
+        document.getElementById('grade_student_id').value = studentId;
+        document.getElementById('grade_student_name').innerText = studentName;
+        document.getElementById('gradeModal').style.display = 'flex';
+    }
+    
+    function closeGradeModal() {
+        document.getElementById('gradeModal').style.display = 'none';
+    }
+    
+    function openAttendanceModal(studentId, studentName) {
+        document.getElementById('att_student_id').value = studentId;
+        document.getElementById('att_student_name').innerText = studentName;
+        document.getElementById('attendanceModal').style.display = 'flex';
+        recalcAttPercentage();
+    }
+    
+    function closeAttendanceModal() {
+        document.getElementById('attendanceModal').style.display = 'none';
+    }
+    
+    function recalcAttPercentage() {
+        const attended = parseInt(document.getElementById('att_attended').value) || 0;
+        const total = parseInt(document.getElementById('att_total').value) || 1;
+        
+        const percentage = Math.round((attended / total) * 100);
+        document.getElementById('att_percentage').value = Math.min(percentage, 100);
+    }
+
+    // Real-time AI Notice Categorizer (Debounced)
+    let categoryScanTimeout = null;
+
+    function triggerAICategoryScan() {
+        clearTimeout(categoryScanTimeout);
+        
+        categoryScanTimeout = setTimeout(() => {
+            const title = document.getElementById('notice_title').value.trim();
+            const content = document.getElementById('notice_content').value.trim();
+            
+            if (title.length < 3 && content.length < 5) return;
+
+            fetch(`/chatbot/suggest-category/?title=${encodeURIComponent(title)}&content=${encodeURIComponent(content)}`)
+                .then(res => res.json())
+                .then(data => {
+                    const pill = document.getElementById('aiSuggestionPill');
+                    const text = document.getElementById('aiSuggestedText');
+                    
+                    text.innerText = data.category;
+                    pill.style.display = 'inline-flex';
+
+                    const select = document.getElementById('notice_category');
+                    select.value = data.category;
+                });
+        }, 300);
+    }
+</script>
+{% endblock %}

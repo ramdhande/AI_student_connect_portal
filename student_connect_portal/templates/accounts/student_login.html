@@ -1,0 +1,52 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Sign In | AI Student Connect Portal</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body class="auth-page-body">
+
+<div class="auth-container">
+    <div class="auth-card" style="border-top: 4px solid #38bdf8;">
+        <div style="font-size: 38px; color: #38bdf8; margin-bottom: 12px; text-shadow: 0 0 15px rgba(56, 189, 248, 0.35);">
+            <i class="fa-solid fa-user-graduate"></i>
+        </div>
+        <h2>Student Portal<span class="accent-dot">.</span></h2>
+        <p>Intelligent College Communication Portal</p>
+
+        <form method="POST" autocomplete="off">
+            {% csrf_token %}
+            <div style="position: relative; margin-top: 14px;">
+                <input type="text" name="username" placeholder="Username" autocomplete="off" required style="padding-left: 40px;">
+                <span style="position: absolute; left: 14px; top: 25px; color: var(--text-muted);"><i class="fa-solid fa-user"></i></span>
+            </div>
+            
+            <div style="position: relative; margin-top: 14px;">
+                <input type="password" name="password" placeholder="Password" autocomplete="new-password" required style="padding-left: 40px;">
+                <span style="position: absolute; left: 14px; top: 25px; color: var(--text-muted);"><i class="fa-solid fa-lock"></i></span>
+            </div>
+
+            <button type="submit" style="background: #0284c7;">Sign In</button>
+        </form>
+
+        {% if error %}
+            <div class="error-msg" style="background: rgba(244, 63, 94, 0.1); border: 1px solid rgba(244, 63, 94, 0.2); padding: 8px; border-radius: 6px; font-size: 13px; margin-top: 14px; color: var(--color-high);">
+                <i class="fa-solid fa-circle-exclamation" style="margin-right: 4px;"></i> {{ error }}
+            </div>
+        {% endif %}
+
+        <div class="bottom-text">
+            Not a student or need selection? <a href="/login/" style="color:#0284c7;">Back to Portal Selector</a><br>
+            New to the portal? <a href="/student/signup/" style="color:#0284c7; display:inline-block; margin-top: 8px;">Create a Student account</a>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

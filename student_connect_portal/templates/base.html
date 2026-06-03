@@ -69,13 +69,32 @@
                             <span>Grievances Desk</span>
                         </a>
                     </li>
-                    {% endif %}
                     <li>
-                        <a href="#publisher" class="nav-link nav-tab {% if user.role == 'teacher' %}active{% endif %}" onclick="switchTab('publisher')">
+                        <a href="#publisher" class="nav-link nav-tab" onclick="switchTab('publisher')">
                             <i class="fa-solid fa-bullhorn"></i>
                             <span>Notice Publisher</span>
                         </a>
                     </li>
+                    {% elif user.role == 'teacher' %}
+                    <li>
+                        <a href="#students" class="nav-link nav-tab active" onclick="switchTab('students')">
+                            <i class="fa-solid fa-user-group"></i>
+                            <span>Student Manager</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#publisher" class="nav-link nav-tab" onclick="switchTab('publisher')">
+                            <i class="fa-solid fa-bullhorn"></i>
+                            <span>Notice Publisher</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#resolver" class="nav-link nav-tab" onclick="switchTab('resolver')">
+                            <i class="fa-solid fa-shield-halved"></i>
+                            <span>Grievances Desk</span>
+                        </a>
+                    </li>
+                    {% endif %}
                     
                     <li class="nav-divider"></li>
                     <li>
@@ -579,7 +598,7 @@
                 {% if user.role == 'admin' %}
                     switchTab('analytics');
                 {% elif user.role == 'teacher' %}
-                    switchTab('publisher');
+                    switchTab('students');
                 {% else %}
                     switchTab('overview');
                 {% endif %}

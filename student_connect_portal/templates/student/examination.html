@@ -1,135 +1,95 @@
 {% extends 'base.html' %}
-{% block title %}Examinations Portal | AI Student Connect Portal{% endblock %}
+{% block title %}Examinations Workspace | AI Student Connect Portal{% endblock %}
 
 {% block content %}
-<div class="dashboard-grid">
-    <!-- Left: Grades, Marks, & Schedule -->
-    <div class="dashboard-left-col">
-        <!-- Midterm Marks Progress Card -->
-        <div class="glass-card" style="margin-bottom: 24px; text-align: left;">
-            <div style="margin-bottom: 16px;">
-                <h3><i class="fa-solid fa-square-poll-vertical" style="color: var(--accent-primary); margin-right: 10px;"></i>Midterm Grading Metrics</h3>
-                <p style="font-size: 12.5px; color: var(--text-secondary); margin-top: 4px;">Official record of mid-term marks submitted by course coordinators.</p>
-            </div>
-            
-            <div style="display: flex; flex-direction: column; gap: 14px;">
-                <!-- Subject 1 -->
-                <div>
-                    <div style="display: flex; justify-content: space-between; font-size: 12.5px; font-weight: 600; margin-bottom: 4px;">
-                        <span>DSA (Data Structures & Algorithms)</span>
-                        <span>88 / 100 (Grade: A)</span>
-                    </div>
-                    <div style="height: 8px; background: rgba(0, 0, 0, 0.05); border-radius: 4px; overflow: hidden;">
-                        <div style="height: 100%; width: 88%; background: var(--accent-primary); border-radius: 4px;"></div>
-                    </div>
-                </div>
-                <!-- Subject 2 -->
-                <div>
-                    <div style="display: flex; justify-content: space-between; font-size: 12.5px; font-weight: 600; margin-bottom: 4px;">
-                        <span>OS (Operating Systems)</span>
-                        <span>92 / 100 (Grade: A+)</span>
-                    </div>
-                    <div style="height: 8px; background: rgba(0, 0, 0, 0.05); border-radius: 4px; overflow: hidden;">
-                        <div style="height: 100%; width: 92%; background: var(--color-resolved); border-radius: 4px;"></div>
-                    </div>
-                </div>
-                <!-- Subject 3 -->
-                <div>
-                    <div style="display: flex; justify-content: space-between; font-size: 12.5px; font-weight: 600; margin-bottom: 4px;">
-                        <span>DBMS (Database Management Systems)</span>
-                        <span>85 / 100 (Grade: A)</span>
-                    </div>
-                    <div style="height: 8px; background: rgba(0, 0, 0, 0.05); border-radius: 4px; overflow: hidden;">
-                        <div style="height: 100%; width: 85%; background: var(--accent-primary); border-radius: 4px;"></div>
-                    </div>
-                </div>
-                <!-- Subject 4 -->
-                <div>
-                    <div style="display: flex; justify-content: space-between; font-size: 12.5px; font-weight: 600; margin-bottom: 4px;">
-                        <span>ML (Machine Learning Basics)</span>
-                        <span>90 / 100 (Grade: A+)</span>
-                    </div>
-                    <div style="height: 8px; background: rgba(0, 0, 0, 0.05); border-radius: 4px; overflow: hidden;">
-                        <div style="height: 100%; width: 90%; background: var(--color-resolved); border-radius: 4px;"></div>
-                    </div>
-                </div>
-                <!-- Subject 5 -->
-                <div>
-                    <div style="display: flex; justify-content: space-between; font-size: 12.5px; font-weight: 600; margin-bottom: 4px;">
-                        <span>CN (Computer Networks)</span>
-                        <span>84 / 100 (Grade: B+)</span>
-                    </div>
-                    <div style="height: 8px; background: rgba(0, 0, 0, 0.05); border-radius: 4px; overflow: hidden;">
-                        <div style="height: 100%; width: 84%; background: var(--color-pending); border-radius: 4px;"></div>
-                    </div>
-                </div>
-            </div>
+<div class="glass-card" style="margin-bottom: 24px; text-align: left; background: linear-gradient(135deg, rgba(29, 78, 216, 0.02), rgba(109, 40, 217, 0.02)); border-color: rgba(109, 40, 217, 0.1);">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <h2 style="font-size: 22px; color: var(--accent-primary);"><i class="fa-solid fa-file-signature" style="margin-right: 8px;"></i>Examinations Desk</h2>
+            <p style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">Monitor your dynamic course evaluations, view upcoming semester timetables, and download secure entry passes.</p>
         </div>
+        <div>
+            <button class="btn-primary" onclick="generateMockHallTicket()" style="background: var(--accent-purple); border-color: var(--accent-purple); display: inline-flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-id-card-clip"></i>
+                <span>Download Hall Ticket</span>
+            </button>
+        </div>
+    </div>
+</div>
 
-        <!-- End Sem Offline Exam Timetable -->
-        <div class="glass-card" style="text-align: left;">
-            <div style="margin-bottom: 16px;">
-                <h3><i class="fa-solid fa-clock" style="color: var(--accent-purple); margin-right: 10px;"></i>End-Semester Examination Timetable</h3>
-                <p style="font-size: 12.5px; color: var(--text-secondary); margin-top: 4px;">Upcoming offline exams scheduled at central college campus rooms.</p>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; text-align: left;">
+    <!-- Left: Grading metrics -->
+    <div class="glass-card" style="display: flex; flex-direction: column; gap: 16px;">
+        <div>
+            <h3 style="font-size: 16px; color: var(--text-primary);"><i class="fa-solid fa-award" style="color: var(--accent-primary); margin-right: 8px;"></i>Mid-Term Academic Grades</h3>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Subject marks verified by course coordinators.</p>
+        </div>
+        
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+            {% for record in user.student_profile.progress_records.all %}
+            <div>
+                <div style="display: flex; justify-content: space-between; font-size: 12.5px; font-weight: 600; margin-bottom: 6px; color: var(--text-primary);">
+                    <span>{{ record.subject }}</span>
+                    <span>{{ record.marks }}/100 (Grade: {{ record.grade }})</span>
+                </div>
+                <div style="height: 6px; background: rgba(0, 0, 0, 0.04); border-radius: 3px; overflow: hidden;">
+                    <div style="height: 100%; width: {{ record.marks }}%; background: linear-gradient(90deg, var(--accent-primary), var(--accent-purple)); border-radius: 3px;"></div>
+                </div>
             </div>
-
-            <div style="overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse; font-size: 12.5px; text-align: left;">
-                    <thead>
-                        <tr style="background: rgba(0, 0, 0, 0.02); border-bottom: 2px solid var(--border-color);">
-                            <th style="padding: 8px 12px; font-weight: 700; color: var(--text-primary);">Subject</th>
-                            <th style="padding: 8px 12px; font-weight: 700; color: var(--text-primary);">Date</th>
-                            <th style="padding: 8px 12px; font-weight: 700; color: var(--text-primary);">Time</th>
-                            <th style="padding: 8px 12px; font-weight: 700; color: var(--text-primary);">Venue</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr style="border-bottom: 1px solid var(--border-color);">
-                            <td style="padding: 10px 12px; font-weight: 600;">DSA Exam</td>
-                            <td style="padding: 10px 12px;">June 15, 2026</td>
-                            <td style="padding: 10px 12px;">10:00 AM - 01:00 PM</td>
-                            <td style="padding: 10px 12px;">CSE Block, Hall 1B</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid var(--border-color);">
-                            <td style="padding: 10px 12px; font-weight: 600;">OS Exam</td>
-                            <td style="padding: 10px 12px;">June 18, 2026</td>
-                            <td style="padding: 10px 12px;">10:00 AM - 01:00 PM</td>
-                            <td style="padding: 10px 12px;">CSE Block, Hall 1B</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid var(--border-color);">
-                            <td style="padding: 10px 12px; font-weight: 600;">DBMS Exam</td>
-                            <td style="padding: 10px 12px;">June 22, 2026</td>
-                            <td style="padding: 10px 12px;">10:00 AM - 01:00 PM</td>
-                            <td style="padding: 10px 12px;">CSE Block, Hall 2A</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid var(--border-color);">
-                            <td style="padding: 10px 12px; font-weight: 600;">ML Exam</td>
-                            <td style="padding: 10px 12px;">June 25, 2026</td>
-                            <td style="padding: 10px 12px;">10:00 AM - 01:00 PM</td>
-                            <td style="padding: 10px 12px;">Seminar Hall 2</td>
-                        </tr>
-                    </tbody>
-                </table>
+            {% empty %}
+            <div class="empty-state" style="padding: 24px 0;">
+                <i class="fa-solid fa-graduation-cap"></i>
+                <p>No grading records seeded yet.</p>
             </div>
+            {% endfor %}
         </div>
     </div>
 
-    <!-- Right: Digital Hall Ticket Center -->
-    <div class="dashboard-right-col">
-        <div class="glass-card" style="text-align: center; border-color: rgba(109, 40, 217, 0.2); background: linear-gradient(135deg, rgba(109, 40, 217, 0.02), rgba(15, 118, 110, 0.02)); height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 250px;">
-            <div style="font-size: 38px; color: var(--accent-purple); margin-bottom: 14px;"><i class="fa-solid fa-id-card-clip"></i></div>
-            <h3>Digital Hall Ticket Portal</h3>
-            <p style="font-size: 12.5px; color: var(--text-secondary); margin-top: 6px; line-height: 1.5;">
-                Generate and download your official Blockchain-verified digital hall ticket. Required for entry into final year examinations halls.
-            </p>
-            <hr style="border: none; border-top: 1px solid var(--border-color); margin: 16px 0; width: 100%;">
-            <button class="btn-primary" onclick="generateMockHallTicket()" style="background: var(--accent-purple); border-color: var(--accent-purple); width: 100%;"><i class="fa-solid fa-file-invoice" style="margin-right: 8px;"></i>Generate Hall Ticket</button>
+    <!-- Right: Exam Schedule -->
+    <div class="glass-card" style="display: flex; flex-direction: column; gap: 16px;">
+        <div>
+            <h3 style="font-size: 16px; color: var(--text-primary);"><i class="fa-solid fa-calendar-day" style="color: var(--accent-purple); margin-right: 8px;"></i>End-Semester Offline Timetable</h3>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Offline examinations schedule at the central campus halls.</p>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid var(--border-color); border-left: 3px solid var(--accent-primary); border-radius: 6px; background: #fafafa;">
+                <div>
+                    <h4 style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">DSA Exam</h4>
+                    <span style="font-size: 11.5px; color: var(--text-secondary); display: block; margin-top: 2px;">CSE Block, Hall 1B</span>
+                </div>
+                <div style="text-align: right;">
+                    <span style="font-size: 12px; font-weight: 600; color: var(--accent-primary); display: block;">June 15, 2026</span>
+                    <span style="font-size: 11px; color: var(--text-muted);">10:00 AM - 01:00 PM</span>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid var(--border-color); border-left: 3px solid var(--accent-primary); border-radius: 6px; background: #fafafa;">
+                <div>
+                    <h4 style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">OS Exam</h4>
+                    <span style="font-size: 11.5px; color: var(--text-secondary); display: block; margin-top: 2px;">CSE Block, Hall 1B</span>
+                </div>
+                <div style="text-align: right;">
+                    <span style="font-size: 12px; font-weight: 600; color: var(--accent-primary); display: block;">June 18, 2026</span>
+                    <span style="font-size: 11px; color: var(--text-muted);">10:00 AM - 01:00 PM</span>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid var(--border-color); border-left: 3px solid var(--accent-primary); border-radius: 6px; background: #fafafa;">
+                <div>
+                    <h4 style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">DBMS Exam</h4>
+                    <span style="font-size: 11.5px; color: var(--text-secondary); display: block; margin-top: 2px;">CSE Block, Hall 2A</span>
+                </div>
+                <div style="text-align: right;">
+                    <span style="font-size: 12px; font-weight: 600; color: var(--accent-primary); display: block;">June 22, 2026</span>
+                    <span style="font-size: 11px; color: var(--text-muted);">10:00 AM - 01:00 PM</span>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    // Mock Blockchain-verified Hall Ticket Generator pop-up
     function generateMockHallTicket() {
         const studentName = "{% if user.student_profile %}{{ user.student_profile.full_name }}{% else %}{{ user.username }}{% endif %}";
         const studentId = "{% if user.student_profile %}{{ user.student_profile.student_id }}{% else %}STU-MOCK{% endif %}";
@@ -210,13 +170,6 @@
                                 <td>CS-403</td>
                                 <td>Database Management</td>
                                 <td>June 22, 2026</td>
-                                <td>10:00 AM - 01:00 PM</td>
-                                <td>Approved</td>
-                            </tr>
-                            <tr>
-                                <td>CS-404</td>
-                                <td>Machine Learning</td>
-                                <td>June 25, 2026</td>
                                 <td>10:00 AM - 01:00 PM</td>
                                 <td>Approved</td>
                             </tr>

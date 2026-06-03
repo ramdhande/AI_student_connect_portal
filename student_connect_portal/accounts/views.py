@@ -1,61 +1,75 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from .forms import CustomUserCreationForm
-from .models import User
-from .models import StudentProfile
+from .models import User, StudentProfile, TeacherProfile, ParentProfile
 
 def login_view(request):
-    if request.method == "POST":
-        username = request.POST['username']
-        password = request.POST['password']
-
-        user = authenticate(request, username=username, password=password)
-        if user:
-            login(request, user)
-            if user.role in ['admin', 'teacher']:
-                return redirect('/admin-dashboard/')
-            elif user.role == 'parent':
-                return redirect('/parent/dashboard/home/')
-            else:
-                return redirect('/dashboard/home/')
-        else:
-            return render(request, 'login.html', {'error': 'Invalid credentials'})
-
-    return render(request, 'login.html')
+    # Unified Portal Selection Page
+    return render(request, 'accounts/portal_login.html')
 
 
 def signup_view(request):
+    # Unified Portal Selection Page
+    return render(request, 'accounts/portal_signup.html')
+
+
+def generic_login_view(request, role, template_name, redirect_url):
     if request.method == "POST":
-        student_id = request.POST.get('student_id')
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        user = authenticate(request, username=username, password=password)
+        if user:
+            if user.role == role:
+                login(request, user)
+                if role == 'parent' and hasattr(user, 'parent_profile') and user.parent_profile:
+                    request.session['linked_student_id'] = user.parent_profile.linked_student.student_id
+                return redirect(redirect_url)
+            else:
+                return render(request, template_name, {'error': f'Invalid credentials. This account is not registered as a {role.capitalize()}.'})
+        else:
+            return render(request, template_name, {'error': 'Invalid username or password.'})
+
+    return render(request, template_name)
+
+
+def generic_signup_view(request, role, profile_model, id_field, template_name, redirect_url):
+    if request.method == "POST":
+        profile_id = request.POST.get('profile_id')
         email = request.POST.get('email')
 
-        # Verify student against college database
+        # Verify against profile database records
         try:
-            student = StudentProfile.objects.get(
-                student_id=student_id,
-                email=email,
-                is_active=True
-            )
-        except StudentProfile.DoesNotExist:
-            return render(request, 'signup.html', {
+            filter_kwargs = {id_field: profile_id, 'email': email, 'is_active': True}
+            profile = profile_model.objects.get(**filter_kwargs)
+        except profile_model.DoesNotExist:
+            return render(request, template_name, {
                 'form': CustomUserCreationForm(),
-                'error': 'You are not found in college records. Please contact administration.'
+                'error': f'No verified {role} record found in college database matching ID & Email.'
             })
 
         form = CustomUserCreationForm(request.POST)
-
         if form.is_valid():
             user = form.save(commit=False)
-            user.role = 'student'
+            user.role = role
             user.email = email
-            user.student_profile = student # VERY IMPORTANT
+
+            if role == 'student':
+                user.student_profile = profile
+            elif role == 'teacher':
+                user.teacher_profile = profile
+            elif role == 'parent':
+                user.parent_profile = profile
+
             user.save()
-
             login(request, user)
-            return redirect('/dashboard/home/')
 
+            if role == 'parent' and profile.linked_student:
+                request.session['linked_student_id'] = profile.linked_student.student_id
+
+            return redirect(redirect_url)
         else:
-            return render(request, 'signup.html', {
+            return render(request, template_name, {
                 'form': form,
                 'error': form.errors
             })
@@ -63,8 +77,31 @@ def signup_view(request):
     else:
         form = CustomUserCreationForm()
 
-    return render(request, 'signup.html', {'form': form})
+    return render(request, template_name, {'form': form})
 
+
+def student_login_view(request):
+    return generic_login_view(request, 'student', 'accounts/student_login.html', '/dashboard/home/')
+
+
+def student_signup_view(request):
+    return generic_signup_view(request, 'student', StudentProfile, 'student_id', 'accounts/student_signup.html', '/dashboard/home/')
+
+
+def teacher_login_view(request):
+    return generic_login_view(request, 'teacher', 'accounts/teacher_login.html', '/teacher/dashboard/')
+
+
+def teacher_signup_view(request):
+    return generic_signup_view(request, 'teacher', TeacherProfile, 'teacher_id', 'accounts/teacher_signup.html', '/teacher/dashboard/')
+
+
+def parent_login_view(request):
+    return generic_login_view(request, 'parent', 'accounts/parent_login.html', '/parent/dashboard/home/')
+
+
+def parent_signup_view(request):
+    return generic_signup_view(request, 'parent', ParentProfile, 'parent_id', 'accounts/parent_signup.html', '/parent/dashboard/home/')
 
 
 def logout_view(request):
