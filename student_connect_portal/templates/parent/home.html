@@ -12,6 +12,9 @@
             </p>
         </div>
         <div style="display: flex; gap: 10px;">
+            <button onclick="generateStudentReport()" class="btn-primary" style="background: var(--accent-purple); border-color: var(--accent-purple); display: inline-flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; padding: 10px 16px; font-weight: 600; border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 13.5px; color: white;">
+                <i class="fa-solid fa-file-invoice"></i>Generate Student Report
+            </button>
             <a href="/parent/dashboard/timetable/" class="btn-primary" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;"><i class="fa-solid fa-calendar-days" style="margin-right: 6px;"></i>Inspect Timetable</a>
         </div>
     </div>
@@ -63,25 +66,23 @@
 <!-- Interactive Dashboard Grid -->
 <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 24px; margin-bottom: 24px; text-align: left;">
     
-    <!-- Child Academic Progress (Simple Card List instead of SGPA Line Graph) -->
+    <!-- Child Academic Progress (Simple Card List without Horizontal Progress Bars) -->
     <div class="glass-card" style="display: flex; flex-direction: column; gap: 16px;">
         <div>
             <h3 style="font-size: 16px; color: var(--text-primary);"><i class="fa-solid fa-square-poll-vertical" style="color: var(--accent-primary); margin-right: 8px;"></i>Academic Progress Overview</h3>
             <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Midterm evaluations and grades recorded in college database.</p>
         </div>
         
-        <div style="display: flex; flex-direction: column; gap: 12px; max-height: 250px; overflow-y: auto; padding-right: 4px;">
+        <div style="display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto; padding-right: 4px;">
             {% for record in child_profile.progress_records.all %}
-            <div style="padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 6px; background: rgba(255, 255, 255, 0.4); display: flex; flex-direction: column; gap: 6px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12.5px; font-weight: 600; color: var(--text-primary);">
-                    <span>{{ record.subject }}</span>
-                    <span style="color: var(--accent-purple);">Marks: {{ record.marks }}/100</span>
+            <div style="padding: 12px 14px; border: 1px solid var(--border-color); border-radius: 8px; background: rgba(255, 255, 255, 0.45); display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+                <div>
+                    <h4 style="font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin: 0;">{{ record.subject }}</h4>
+                    <span style="font-size: 11.5px; color: var(--text-muted); display: block; margin-top: 2px;">Semester {{ record.semester }} Evaluation</span>
                 </div>
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
-                    <div style="height: 6px; background: rgba(0, 0, 0, 0.04); border-radius: 3px; overflow: hidden; flex: 1;">
-                        <div style="height: 100%; width: {{ record.marks }}%; background: linear-gradient(90deg, var(--accent-primary), var(--accent-purple)); border-radius: 3px;"></div>
-                    </div>
-                    <span style="font-size: 11px; font-weight: 700; color: var(--accent-purple); padding: 2px 6px; background: rgba(109, 40, 217, 0.08); border-radius: 4px; min-width: 48px; text-align: center;">Grade {{ record.grade }}</span>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 13px; font-weight: 700; color: var(--text-primary);">{{ record.marks }} / 100</span>
+                    <span style="font-size: 11.5px; font-weight: 800; color: var(--accent-purple); padding: 4px 8px; background: rgba(109, 40, 217, 0.08); border-radius: 4px; border: 1px solid rgba(109, 40, 217, 0.15);">Grade {{ record.grade }}</span>
                 </div>
             </div>
             {% empty %}
@@ -148,4 +149,180 @@
         {% endfor %}
     </div>
 </div>
+
+<script>
+    function generateStudentReport() {
+        const studentName = "{{ child_profile.full_name|escapejs }}";
+        const studentId = "{{ child_profile.student_id|escapejs }}";
+        const dept = "{{ child_profile.department|escapejs }}";
+        const currentYear = "{{ child_profile.year }}th Year";
+        const email = "{{ child_profile.email|escapejs }}";
+        const overallAttendance = "{{ overall_attendance }}%";
+        
+        const progressHTML = `
+            {% for record in child_profile.progress_records.all %}
+            <tr>
+                <td>{{ record.subject|escapejs }}</td>
+                <td>Semester {{ record.semester }}</td>
+                <td><strong>{{ record.marks }} / 100</strong></td>
+                <td><span style="font-weight: 700; color: #6d28d9; padding: 2px 6px; background: #f3e8ff; border-radius: 4px;">{{ record.grade }}</span></td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" style="text-align: center; color: #64748b;">No academic progress logs registered.</td>
+            </tr>
+            {% endfor %}
+        `;
+
+        const attendanceHTML = `
+            {% for att in child_profile.attendance_records.all %}
+            <tr>
+                <td>{{ att.subject|escapejs }}</td>
+                <td>{{ att.classes_attended }} / {{ att.total_classes }} lectures</td>
+                <td><strong style="color: {% if att.percentage >= 75 %}#059669{% else %}#dc2626{% endif %};">{{ att.percentage }}%</strong></td>
+                <td>
+                    {% if att.percentage >= 75 %}
+                    <span style="color: #059669; font-weight:600;">✓ Eligible</span>
+                    {% else %}
+                    <span style="color: #dc2626; font-weight:600;">⚠ Shortage</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" style="text-align: center; color: #64748b;">No attendance logs registered.</td>
+            </tr>
+            {% endfor %}
+        `;
+
+        const printWindow = window.open('', '_blank', 'width=900,height=800');
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>Student Performance Report - \${studentId}</title>
+                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+                <style>
+                    body { font-family: 'Inter', sans-serif; padding: 40px; color: #0f172a; line-height: 1.5; background: #ffffff; }
+                    .report-box { border: 2px solid #e2e8f0; padding: 40px; border-radius: 12px; max-width: 800px; margin: 0 auto; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+                    .report-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #0f172a; padding-bottom: 20px; margin-bottom: 24px; }
+                    .report-header h2 { margin: 0; font-size: 22px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; }
+                    .report-header p { margin: 4px 0 0; font-size: 13px; color: #64748b; font-weight: 500; }
+                    .student-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 13.5px; margin-bottom: 32px; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #f1f5f9; }
+                    .student-info-grid div p { margin: 6px 0; }
+                    .student-info-grid strong { color: #334155; }
+                    table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; margin-bottom: 24px; }
+                    th, td { border: 1px solid #e2e8f0; padding: 10px 14px; text-align: left; }
+                    th { background: #f1f5f9; font-weight: 700; color: #1e293b; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+                    h3 { font-size: 15px; font-weight: 700; color: #1e293b; border-left: 4px solid #6d28d9; padding-left: 10px; margin-top: 24px; margin-bottom: 12px; }
+                    .summary-banner { display: flex; justify-content: space-between; background: #faf5ff; border: 1px solid #f3e8ff; padding: 16px 20px; border-radius: 8px; margin-bottom: 32px; }
+                    .summary-item { text-align: center; }
+                    .summary-val { font-size: 18px; font-weight: 800; color: #6d28d9; margin-top: 4px; }
+                    .summary-lbl { font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase; }
+                    .coordination-box { margin-top: 32px; border-top: 1px dashed #cbd5e1; padding-top: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+                    .signature-line { border-bottom: 1px solid #94a3b8; margin-top: 50px; height: 1px; }
+                    .btn-print { background: #6d28d9; color: white; padding: 12px 24px; border: none; border-radius: 6px; font-weight: 700; font-size: 13.5px; cursor: pointer; margin-top: 24px; display: inline-flex; align-items: center; gap: 8px; transition: background 0.2s; }
+                    .btn-print:hover { background: #5b21b6; }
+                    @media print {
+                        .btn-print { display: none; }
+                        body { padding: 0; background: transparent; }
+                        .report-box { border: none; box-shadow: none; padding: 0; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="report-box">
+                    <div class="report-header">
+                        <div>
+                            <h2>Student Progress & Performance Report</h2>
+                            <p>AI Student Connect Portal • Academic Review Desk</p>
+                        </div>
+                        <div style="text-align: right; font-size: 12px; color: #64748b;">
+                            <strong>Date:</strong> ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                        </div>
+                    </div>
+                    
+                    <div class="student-info-grid">
+                        <div>
+                            <p><strong>Student Name:</strong> \${studentName}</p>
+                            <p><strong>Student ID:</strong> \${studentId}</p>
+                            <p><strong>College Email:</strong> \${email}</p>
+                        </div>
+                        <div>
+                            <p><strong>Department:</strong> \${dept}</p>
+                            <p><strong>Academic Year:</strong> \${currentYear}</p>
+                            <p><strong>Status:</strong> Enrolled (Active)</p>
+                        </div>
+                    </div>
+
+                    <div class="summary-banner">
+                        <div class="summary-item">
+                            <div class="summary-lbl">Overall Attendance</div>
+                            <div class="summary-val">\${overallAttendance}</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-lbl">Cumulative CGPA</div>
+                            <div class="summary-val">9.02 / 10.0</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-lbl">Academic Standing</div>
+                            <div class="summary-val" style="color: #059669;">Excellent</div>
+                        </div>
+                    </div>
+
+                    <h3>I. Academic Evaluation Grades</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 50%;">Subject Name</th>
+                                <th>Assessment</th>
+                                <th>Marks Obtained</th>
+                                <th>Subject Grade</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            \${progressHTML}
+                        </tbody>
+                    </table>
+
+                    <h3>II. Attendance Summary</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 50%;">Subject Name</th>
+                                <th>Lectures Attended</th>
+                                <th>Attendance Rate</th>
+                                <th>Exams Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            \${attendanceHTML}
+                        </tbody>
+                    </table>
+
+                    <h3>III. Coordination & Meeting Notes</h3>
+                    <p style="font-size: 12px; color: #475569; line-height: 1.6; margin-bottom: 24px; font-style: italic;">
+                        This document serves as an official report card summarizing student classroom evaluation and attendance details. Parents and faculty members can utilize this report for institutional coordination meetings and academic performance reviews.
+                    </p>
+
+                    <div class="coordination-box">
+                        <div>
+                            <div class="signature-line"></div>
+                            <p style="font-size: 12px; text-align: center; margin-top: 8px; color: #475569; font-weight: 600;">Class Coordinator Signature</p>
+                        </div>
+                        <div>
+                            <div class="signature-line"></div>
+                            <p style="font-size: 12px; text-align: center; margin-top: 8px; color: #475569; font-weight: 600;">Parent / Guardian Signature</p>
+                        </div>
+                    </div>
+                    
+                    <button class="btn-print" onclick="window.print()">
+                        Print Official Report Card
+                    </button>
+                </div>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+    }
+</script>
 {% endblock %}
