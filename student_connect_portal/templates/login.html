@@ -9,43 +9,356 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    <style>
+        /* Modern Glassmorphic / Gradient Background styling */
+        .auth-page-body {
+            position: relative;
+            background-color: #f8fafc;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.08) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, rgba(109, 40, 217, 0.08) 0, transparent 50%),
+                radial-gradient(at 50% 100%, rgba(15, 118, 110, 0.05) 0, transparent 50%);
+            overflow: hidden;
+        }
+
+        .background-glow {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, rgba(255,255,255,0) 70%);
+            top: -100px;
+            left: -100px;
+            z-index: -1;
+            filter: blur(50px);
+            animation: floatGlow 15s infinite ease-in-out alternate;
+        }
+
+        .background-glow-secondary {
+            position: absolute;
+            width: 450px;
+            height: 450px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(109, 40, 217, 0.12) 0%, rgba(255,255,255,0) 70%);
+            bottom: -100px;
+            right: -100px;
+            z-index: -1;
+            filter: blur(50px);
+            animation: floatGlow 12s infinite ease-in-out alternate-reverse;
+        }
+
+        @keyframes floatGlow {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(50px, 50px) scale(1.1); }
+        }
+
+        /* Dynamic Theme Classes */
+        .theme-student {
+            --role-color: #0284c7;
+            --role-color-hover: #0369a1;
+            --role-shadow: rgba(56, 189, 248, 0.35);
+            --role-border: #38bdf8;
+        }
+
+        .theme-parent {
+            --role-color: #0f766e;
+            --role-color-hover: #0d5c56;
+            --role-shadow: rgba(15, 118, 110, 0.35);
+            --role-border: #0f766e;
+        }
+
+        .theme-teacher {
+            --role-color: #6d28d9;
+            --role-color-hover: #5b21b6;
+            --role-shadow: rgba(109, 40, 217, 0.35);
+            --role-border: #6d28d9;
+        }
+
+        /* Card and Components styling */
+        .auth-card {
+            border-top: 4px solid var(--role-border) !important;
+            transition: border-color 0.4s ease, box-shadow 0.4s ease;
+            max-width: 460px;
+            width: 100%;
+            padding: 36px 32px;
+            background: #ffffff;
+            box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.08);
+            border-radius: 16px !important;
+        }
+
+        .portal-brand-icon {
+            color: var(--role-border);
+            text-shadow: 0 0 15px var(--role-shadow);
+            transition: color 0.4s ease, text-shadow 0.4s ease;
+        }
+
+        /* Modern Tabs Layout */
+        .login-tabs {
+            display: flex;
+            gap: 6px;
+            margin: 24px 0;
+            background: #f1f5f9;
+            padding: 5px;
+            border-radius: 10px;
+            border-bottom: none;
+        }
+
+        .tab-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px 4px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-family: 'Outfit', sans-serif;
+            font-size: 13.5px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .tab-btn i {
+            font-size: 14px;
+            transition: transform 0.2s ease;
+        }
+
+        .tab-btn:hover i {
+            transform: translateY(-1px);
+        }
+
+        .tab-btn.active {
+            color: #ffffff;
+            background: var(--role-color);
+            box-shadow: 0 4px 12px var(--role-shadow);
+        }
+
+        .auth-card button[type="submit"] {
+            background: var(--role-color);
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            padding: 12px;
+            border-radius: 8px;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.1s ease;
+        }
+
+        .auth-card button[type="submit"]:hover {
+            background: var(--role-color-hover);
+            box-shadow: 0 6px 16px var(--role-shadow);
+        }
+
+        .auth-card button[type="submit"]:active {
+            transform: scale(0.98);
+        }
+
+        .auth-card input {
+            border-radius: 8px;
+            padding: 12px 14px 12px 42px !important;
+            font-size: 14px;
+            border: 1px solid #cbd5e1;
+            transition: all 0.2s ease;
+        }
+
+        .auth-card input:focus {
+            border-color: var(--role-color) !important;
+            box-shadow: 0 0 0 3px var(--role-shadow) !important;
+            background-color: #ffffff;
+        }
+
+        .bottom-text a {
+            color: var(--role-color);
+            transition: color 0.3s ease;
+        }
+
+        .bottom-text a:hover {
+            color: var(--role-color-hover);
+        }
+
+        .form-container {
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
 <body class="auth-page-body">
 
+<div class="background-glow"></div>
+<div class="background-glow-secondary"></div>
+
 <div class="auth-container">
-    <div class="auth-card">
-        <div style="font-size: 38px; color: var(--accent-blue); margin-bottom: 12px; text-shadow: 0 0 15px rgba(56, 189, 248, 0.35);">
-            <i class="fa-solid fa-graduation-cap"></i>
+    <div class="auth-card theme-{{ active_role }}">
+        <!-- Dynamic Header Icon and Branding -->
+        <div style="font-size: 40px; margin-bottom: 12px;" class="portal-brand-icon" id="portal-icon">
+            <i id="portal-icon-i" class="fa-solid {% if active_role == 'student' %}fa-user-graduate{% elif active_role == 'parent' %}fa-user-tie{% else %}fa-chalkboard-user{% endif %}"></i>
         </div>
         <h2>StudentConnect<span class="accent-dot">.</span></h2>
-        <p>Intelligent College Communication Portal</p>
+        <p id="portal-subtitle" style="margin-bottom: 0;">
+            {% if active_role == 'student' %}
+                Intelligent College Communication Portal
+            {% elif active_role == 'parent' %}
+                Student Performance & Welfare Monitor
+            {% else %}
+                Faculty & Course Management Desk
+            {% endif %}
+        </p>
 
-        <form method="POST" autocomplete="off">
-            {% csrf_token %}
-            <div style="position: relative; margin-top: 14px;">
-                <input type="text" name="username" placeholder="Username" autocomplete="off" required style="padding-left: 40px;">
-                <span style="position: absolute; left: 14px; top: 25px; color: var(--text-muted);"><i class="fa-solid fa-user"></i></span>
-            </div>
-            
-            <div style="position: relative; margin-top: 14px;">
-                <input type="password" name="password" placeholder="Password" autocomplete="new-password" required style="padding-left: 40px;">
-                <span style="position: absolute; left: 14px; top: 25px; color: var(--text-muted);"><i class="fa-solid fa-lock"></i></span>
-            </div>
-
-            <button type="submit">Sign In</button>
-        </form>
-
+        <!-- Dynamic Unified Error Display -->
         {% if error %}
-            <div class="error-msg" style="background: rgba(244, 63, 94, 0.1); border: 1px solid rgba(244, 63, 94, 0.2); padding: 8px; border-radius: 6px; font-size: 13px;">
-                <i class="fa-solid fa-circle-exclamation" style="margin-right: 4px;"></i> {{ error }}
+            <div class="error-msg" style="background: rgba(244, 63, 94, 0.08); border: 1px solid rgba(244, 63, 94, 0.15); padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-top: 18px; color: var(--color-high); text-align: left; line-height: 1.4;">
+                <i class="fa-solid fa-circle-exclamation" style="margin-right: 6px; float: left; margin-top: 2px;"></i> 
+                <span>{{ error }}</span>
             </div>
         {% endif %}
 
-        <div class="bottom-text">
-            New to the portal? <a href="/signup/">Create an account</a>
+        <!-- Tab Controls -->
+        <div class="login-tabs">
+            <button type="button" class="tab-btn {% if active_role == 'student' %}active{% endif %}" data-role="student">
+                <i class="fa-solid fa-user-graduate"></i> Student
+            </button>
+            <button type="button" class="tab-btn {% if active_role == 'parent' %}active{% endif %}" data-role="parent">
+                <i class="fa-solid fa-user-tie"></i> Parent
+            </button>
+            <button type="button" class="tab-btn {% if active_role == 'teacher' %}active{% endif %}" data-role="teacher">
+                <i class="fa-solid fa-chalkboard-user"></i> Teacher
+            </button>
         </div>
+
+        <!-- Student Form Container -->
+        <div class="form-container student-form" style="display: {% if active_role == 'student' %}block{% else %}none{% endif %};">
+            <form method="POST" autocomplete="off">
+                {% csrf_token %}
+                <input type="hidden" name="role" value="student">
+                <div style="position: relative; margin-top: 14px;">
+                    <input type="text" name="username" placeholder="Student Username" autocomplete="off" required style="padding-left: 40px;" value="{% if active_role == 'student' %}{{ username|default:'' }}{% endif %}">
+                    <span style="position: absolute; left: 14px; top: 21px; color: var(--text-muted);"><i class="fa-solid fa-user"></i></span>
+                </div>
+                
+                <div style="position: relative; margin-top: 14px;">
+                    <input type="password" name="password" placeholder="Password" autocomplete="new-password" required style="padding-left: 40px;">
+                    <span style="position: absolute; left: 14px; top: 21px; color: var(--text-muted);"><i class="fa-solid fa-lock"></i></span>
+                </div>
+
+                <button type="submit">Sign In as Student</button>
+            </form>
+            <div class="bottom-text">
+                New to the portal? <a href="/student/signup/">Create a Student account</a>
+            </div>
+        </div>
+
+        <!-- Parent Form Container -->
+        <div class="form-container parent-form" style="display: {% if active_role == 'parent' %}block{% else %}none{% endif %};">
+            <form method="POST" autocomplete="off">
+                {% csrf_token %}
+                <input type="hidden" name="role" value="parent">
+                <div style="position: relative; margin-top: 14px;">
+                    <input type="text" name="username" placeholder="Parent Username" autocomplete="off" required style="padding-left: 40px;" value="{% if active_role == 'parent' %}{{ username|default:'' }}{% endif %}">
+                    <span style="position: absolute; left: 14px; top: 21px; color: var(--text-muted);"><i class="fa-solid fa-user"></i></span>
+                </div>
+                
+                <div style="position: relative; margin-top: 14px;">
+                    <input type="password" name="password" placeholder="Password" autocomplete="new-password" required style="padding-left: 40px;">
+                    <span style="position: absolute; left: 14px; top: 21px; color: var(--text-muted);"><i class="fa-solid fa-lock"></i></span>
+                </div>
+
+                <button type="submit">Sign In as Parent</button>
+            </form>
+            <div class="bottom-text">
+                New to the portal? <a href="/parent/signup/">Create a Parent account</a>
+            </div>
+        </div>
+
+        <!-- Teacher Form Container -->
+        <div class="form-container teacher-form" style="display: {% if active_role == 'teacher' %}block{% else %}none{% endif %};">
+            <form method="POST" autocomplete="off">
+                {% csrf_token %}
+                <input type="hidden" name="role" value="teacher">
+                <div style="position: relative; margin-top: 14px;">
+                    <input type="text" name="username" placeholder="Teacher Username" autocomplete="off" required style="padding-left: 40px;" value="{% if active_role == 'teacher' %}{{ username|default:'' }}{% endif %}">
+                    <span style="position: absolute; left: 14px; top: 21px; color: var(--text-muted);"><i class="fa-solid fa-user"></i></span>
+                </div>
+                
+                <div style="position: relative; margin-top: 14px;">
+                    <input type="password" name="password" placeholder="Password" autocomplete="new-password" required style="padding-left: 40px;">
+                    <span style="position: absolute; left: 14px; top: 21px; color: var(--text-muted);"><i class="fa-solid fa-lock"></i></span>
+                </div>
+
+                <button type="submit">Sign In as Teacher</button>
+            </form>
+            <div class="bottom-text">
+                New to the portal? <a href="/teacher/signup/">Create a Teacher account</a>
+            </div>
+        </div>
+
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tabs = document.querySelectorAll('.tab-btn');
+        const authCard = document.querySelector('.auth-card');
+        const portalIcon = document.getElementById('portal-icon-i');
+        const portalSubtitle = document.getElementById('portal-subtitle');
+        
+        const roleConfig = {
+            student: {
+                themeClass: 'theme-student',
+                iconClass: 'fa-user-graduate',
+                subtitle: 'Intelligent College Communication Portal',
+                formClass: 'student-form'
+            },
+            parent: {
+                themeClass: 'theme-parent',
+                iconClass: 'fa-user-tie',
+                subtitle: 'Student Performance & Welfare Monitor',
+                formClass: 'parent-form'
+            },
+            teacher: {
+                themeClass: 'theme-teacher',
+                iconClass: 'fa-chalkboard-user',
+                subtitle: 'Faculty & Course Management Desk',
+                formClass: 'teacher-form'
+            }
+        };
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                const role = this.getAttribute('data-role');
+                
+                // 1. Update active tab button state
+                tabs.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                // 2. Transition visual card theme class
+                authCard.className = 'auth-card ' + roleConfig[role].themeClass;
+                
+                // 3. Update top icon and subtitle
+                portalIcon.className = 'fa-solid ' + roleConfig[role].iconClass;
+                portalSubtitle.textContent = roleConfig[role].subtitle;
+                
+                // 4. Hide other form containers, show target form container
+                document.querySelectorAll('.form-container').forEach(form => {
+                    form.style.display = 'none';
+                });
+                document.querySelector('.' + roleConfig[role].formClass).style.display = 'block';
+                
+                // 5. Hide the dynamic error message (to clear old error context)
+                const errorMsg = document.querySelector('.error-msg');
+                if (errorMsg) {
+                    errorMsg.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
 
 </body>
 </html>

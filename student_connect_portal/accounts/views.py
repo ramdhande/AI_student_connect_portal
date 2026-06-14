@@ -4,17 +4,17 @@ from .forms import CustomUserCreationForm
 from .models import User, StudentProfile, TeacherProfile, ParentProfile
 
 def login_view(request):
-    return redirect('/student/login/')
+    active_role = request.GET.get('role', 'student')
+    if active_role not in ['student', 'parent', 'teacher']:
+        active_role = 'student'
 
-
-def signup_view(request):
-    return redirect('/student/signup/')
-
-
-def generic_login_view(request, role, template_name, redirect_url):
     if request.method == "POST":
+        role = request.POST.get('role')
         username = request.POST.get('username')
         password = request.POST.get('password')
+
+        if role not in ['student', 'parent', 'teacher']:
+            role = 'student'
 
         user = authenticate(request, username=username, password=password)
         if user:
@@ -22,13 +22,34 @@ def generic_login_view(request, role, template_name, redirect_url):
                 login(request, user)
                 if role == 'parent' and hasattr(user, 'parent_profile') and user.parent_profile:
                     request.session['linked_student_id'] = user.parent_profile.linked_student.student_id
-                return redirect(redirect_url)
+                
+                if role == 'student':
+                    return redirect('/dashboard/home/')
+                elif role == 'parent':
+                    return redirect('/parent/dashboard/home/')
+                elif role == 'teacher':
+                    return redirect('/teacher/dashboard/')
             else:
-                return render(request, template_name, {'error': f'Invalid credentials. This account is not registered as a {role.capitalize()}.'})
+                role_display = "Student" if user.role == "student" else user.role.capitalize()
+                target_display = "Student" if role == "student" else role.capitalize()
+                error_msg = f"Invalid credentials. This account is registered as a {role_display}, not a {target_display}."
+                return render(request, 'login.html', {
+                    'error': error_msg,
+                    'active_role': role,
+                    'username': username
+                })
         else:
-            return render(request, template_name, {'error': 'Invalid username or password.'})
+            return render(request, 'login.html', {
+                'error': 'Invalid username or password.',
+                'active_role': role,
+                'username': username
+            })
 
-    return render(request, template_name)
+    return render(request, 'login.html', {'active_role': active_role})
+
+
+def signup_view(request):
+    return redirect('/student/signup/')
 
 
 def generic_signup_view(request, role, profile_model, id_field, template_name, redirect_url):
@@ -79,7 +100,7 @@ def generic_signup_view(request, role, profile_model, id_field, template_name, r
 
 
 def student_login_view(request):
-    return generic_login_view(request, 'student', 'accounts/student_login.html', '/dashboard/home/')
+    return redirect('/login/?role=student')
 
 
 def student_signup_view(request):
@@ -87,7 +108,7 @@ def student_signup_view(request):
 
 
 def teacher_login_view(request):
-    return generic_login_view(request, 'teacher', 'accounts/teacher_login.html', '/teacher/dashboard/')
+    return redirect('/login/?role=teacher')
 
 
 def teacher_signup_view(request):
@@ -95,7 +116,7 @@ def teacher_signup_view(request):
 
 
 def parent_login_view(request):
-    return generic_login_view(request, 'parent', 'accounts/parent_login.html', '/parent/dashboard/home/')
+    return redirect('/login/?role=parent')
 
 
 def parent_signup_view(request):
