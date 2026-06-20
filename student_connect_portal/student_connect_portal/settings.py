@@ -84,7 +84,13 @@ WSGI_APPLICATION = 'student_connect_portal.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 if os.environ.get('RENDER'):
-    DATABASE_PATH = '/data/db.sqlite3'
+    persistent_dir = Path('/data')
+    try:
+        # Try to make directory if missing, otherwise use it
+        persistent_dir.mkdir(parents=True, exist_ok=True)
+        DATABASE_PATH = persistent_dir / 'db.sqlite3'
+    except Exception:
+        DATABASE_PATH = BASE_DIR / 'db.sqlite3'
 else:
     DATABASE_PATH = BASE_DIR / 'db.sqlite3'
 
